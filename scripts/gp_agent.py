@@ -32,7 +32,7 @@ def agent_client():
     global record
     transition = upDate_transition.update_transition_class()
     #set the publisher for sending the goals
-    action_client = actionlib.SimpleActionClient('env_action',gp_gazebo.msg.agentAction)
+    action_client = actionlib.SimpleActionClient('env1',gp_gazebo.msg.agentAction)
     print "action client init"
     #r = rospy.Rate(20)
     action_client.wait_for_server()

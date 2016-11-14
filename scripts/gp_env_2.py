@@ -55,21 +55,21 @@ class agentAction(object):
 		print action_value
 		if action_value == 0:
 		    pose.pose.position.x = self.xPos
-		    pose.pose.position.y = min(self.yPos + 1,GRID)
+		    pose.pose.position.y = min(self.yPos + 2,GRID)
 		    pose.pose.position.z = self.zPos
 		  
 		elif action_value == 1:
-		    pose.pose.position.x = max(self.xPos - 1,-GRID)
+		    pose.pose.position.x = max(self.xPos - 2,-GRID)
 		    pose.pose.position.y = self.yPos
 		    pose.pose.position.z = self.zPos
 
 		elif action_value == 2:
 		    pose.pose.position.x = self.xPos
-		    pose.pose.position.y = max(self.yPos - 1,-GRID)
+		    pose.pose.position.y = max(self.yPos - 2,-GRID)
 		    pose.pose.position.z = self.zPos
 
 		elif action_value == 3:
-		    pose.pose.position.x = min(self.xPos + 1,GRID)
+		    pose.pose.position.x = min(self.xPos + 2,GRID)
 		    pose.pose.position.y = self.yPos
 		    pose.pose.position.z = self.zPos
 
@@ -99,7 +99,7 @@ class agentAction(object):
 		if action_value != -1:    
 			for i in range(0,10):
 				localPosPub.publish(pose)
-				time.sleep(0.2)
+				time.sleep(0.3)
 		
 			currPose = rospy.wait_for_message("/mavros/local_position/pose" ,PoseStamped) 
 			'''
@@ -167,7 +167,7 @@ if __name__ == '__main__':
 		    state = rospy.wait_for_message("mavros/state",State)
 		
 		
-		agentAction('env1')
+		agentAction('env2')
 		rospy.spin()
     except rospy.ROSInterruptException:
         pass
