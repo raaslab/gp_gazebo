@@ -33,7 +33,7 @@ class update_transition_class:
 
 		D , t = np.array( training ), np.array( target )
 		kernel = C(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))
-		gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=9,alpha=1e-4)
+		gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=9,alpha=1e-2)
 		# Fit to data using Maximum Likelihood Estimation of the parameters
 		gp.fit(D, t)
 		# visualize policy

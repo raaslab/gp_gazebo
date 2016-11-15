@@ -55,21 +55,21 @@ class agentAction(object):
 		print action_value
 		if action_value == 0:
 		    pose.pose.position.x = self.xPos
-		    pose.pose.position.y = min(self.yPos + 3,GRID)
+		    pose.pose.position.y = min(self.yPos + 4,GRID)
 		    pose.pose.position.z = self.zPos
 		  
 		elif action_value == 1:
-		    pose.pose.position.x = max(self.xPos - 3,-GRID)
+		    pose.pose.position.x = max(self.xPos - 4,-GRID)
 		    pose.pose.position.y = self.yPos
 		    pose.pose.position.z = self.zPos
 
 		elif action_value == 2:
 		    pose.pose.position.x = self.xPos
-		    pose.pose.position.y = max(self.yPos - 3,-GRID)
+		    pose.pose.position.y = max(self.yPos - 4,-GRID)
 		    pose.pose.position.z = self.zPos
 
 		elif action_value == 3:
-		    pose.pose.position.x = min(self.xPos + 3,GRID)
+		    pose.pose.position.x = min(self.xPos + 4,GRID)
 		    pose.pose.position.y = self.yPos
 		    pose.pose.position.z = self.zPos
 
@@ -122,7 +122,7 @@ class agentAction(object):
 			#self._feedback.terminal = False
 				self._result.reward= -1
 				self._result.terminal = False
-				print "1 unit movement"
+				print "4 unit movement"
 
 			self._result.state.insert(0,currentX)
 			self._result.state.insert(1,currentY)
