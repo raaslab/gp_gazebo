@@ -1,5 +1,5 @@
 #!/usr/bin/python
 
-GRID = 2
+GRID = 4
 numOfActions = 4
-initialTrainingEpisodes = 50
+initialTrainingEpisodes = 15

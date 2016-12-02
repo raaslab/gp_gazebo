@@ -45,13 +45,13 @@ def agent_client():
         print "GOAL SENT --> " + str(goal) 
         action_client.wait_for_result()
 
-        if j == 10:
+        if j == 5:
             action_client = actionlib.SimpleActionClient('env2',gp_gazebo.msg.agentAction)
             print "=============="
             print "Changing environment to 2"
             print "=============="
             action_client.wait_for_server()
-        elif j == 20:
+        elif j == 10:
             action_client = actionlib.SimpleActionClient('env3',gp_gazebo.msg.agentAction)
             print "=============="
             print "Changing environment to 3"
