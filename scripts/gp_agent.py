@@ -18,12 +18,40 @@ from mavros_msgs.msg import State
 from mavros_msgs.srv import SetMode, StreamRate, StreamRateRequest, CommandBool, CommandTOL
 from geometry_msgs.msg import *
 from global_var import initialTrainingEpisodes, GRID
+import global_var
+from collections import deque
 #currentState = 0
 action_value = 0
 old_state = (0,0)
 next_state = (0,0)
 #plannerObj = None
 record = []
+envList = ['env3','env2','env1']
+states1 = [ (i , j) for i in xrange(-GRID,GRID+1,1) for j in xrange(-GRID,GRID+1,1)]
+states2 = [ (i , j) for i in xrange(-GRID,GRID+1,2) for j in xrange(-GRID,GRID+1,2)]
+states3 = [ (i , j) for i in xrange(-GRID,GRID+1,4) for j in xrange(-GRID,GRID+1,4)]
+recordCounter = 0
+devQueue = deque(10*[0],10)
+
+global_var.sigmaDict = {}
+global_var.delta_t = 4
+
+sigma_sum_thresh = 2
+sigmaThresh = 0.2 
+currentEnv = envList[0]
+
+def currentStates(currentEnvironmet):
+    if currentEnvironmet == 'env1':
+        return states1
+    elif currentEnvironmet == 'env2':
+        return states2
+    elif currentEnvironmet == 'env3':
+        return states3
+
+def check(curr,currentEnvironment):
+    return curr in currentStates(envList[envList.index(currentEnvironment)-1])
+
+
 def agent_client():
 
     global action_value
@@ -44,19 +72,6 @@ def agent_client():
         #action_client.send_goal(goal)
         print "GOAL SENT --> " + str(goal) 
         action_client.wait_for_result()
-
-        if j == 5:
-            action_client = actionlib.SimpleActionClient('env2',gp_gazebo.msg.agentAction)
-            print "=============="
-            print "Changing environment to 2"
-            print "=============="
-            action_client.wait_for_server()
-        elif j == 10:
-            action_client = actionlib.SimpleActionClient('env3',gp_gazebo.msg.agentAction)
-            print "=============="
-            print "Changing environment to 3"
-            print "=============="
-            action_client.wait_for_server()
 
     T = transition.upDate_transition(record)
     plt.show()
@@ -81,6 +96,7 @@ def done(integer,result):
                     action_value_append = (0,-1)
                 elif action_value == 3:
                     action_value_append = (1,0)
+                velocity =  ((next_state[0] - old_state[0])/global_var.delta_t, (next_state[1] - old_state[1])/global_var.delta_t)
                 record.append( [old_state, action_value_append, next_state] )
                 old_state = next_state
 

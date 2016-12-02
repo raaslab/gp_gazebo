@@ -34,6 +34,7 @@ class agentAction(object):
 		self._as = actionlib.SimpleActionServer(self._action_name,gp_gazebo.msg.agentAction,execute_cb=self.execute, auto_start = False)
 		self._as.start()
 		print "Action server started"
+		global_var.delta_t = 1
 
 	def execute(self,goal):
 		#action_value = _as.accept_new_goal()
@@ -99,7 +100,7 @@ class agentAction(object):
 		if action_value != -1:    
 			for i in range(0,10):
 				localPosPub.publish(pose)
-				time.sleep(0.4)
+				time.sleep(0.3)
 		
 			currPose = rospy.wait_for_message("/mavros/local_position/pose" ,PoseStamped) 
 			'''

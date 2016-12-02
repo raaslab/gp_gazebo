@@ -34,6 +34,7 @@ class agentAction(object):
 		self._as = actionlib.SimpleActionServer(self._action_name,gp_gazebo.msg.agentAction,execute_cb=self.execute, auto_start = False)
 		self._as.start()
 		print "Action server started"
+		global_var.delta_t = 1
 
 	def execute(self,goal):
 		#action_value = _as.accept_new_goal()
