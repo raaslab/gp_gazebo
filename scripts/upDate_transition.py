@@ -51,10 +51,12 @@ class update_transition_class:
 		varSum2 = 0
 		varSumoverall = 0
 		print state
+		'''
 		fig = plt.figure()
 
 		plot1 = fig.add_subplot(211)
 		plot2 = fig.add_subplot(212)
+		'''
 		for i in array:
 			mu, sigma_square = gp.predict( np.array( [i, 0, 1, 0,]),return_std=True, return_cov=False)
 			sigma = np.sqrt(sigma_square)
@@ -75,7 +77,7 @@ class update_transition_class:
 			muListY.append(mu2[0][1])
 			sigmaListY.append(sigma2[0])
 
-			if i >= -2 and i <= 2:
+			if i >= -GRID and i <= GRID:
 				plot2.scatter(i,mu2[0][1],marker='o', s=100, color='blue')
 				varSum2 = varSum2 + sigma2[0]
 			prevList.append(i)
@@ -85,7 +87,7 @@ class update_transition_class:
 
 		#f2.write(str(varSum2) + "\n")
 		#f2.close()
-
+		'''
 		plot1.set_ylabel('$x_{t+1}$')
 		plot1.set_xlabel('$x_t$')
 
@@ -94,7 +96,7 @@ class update_transition_class:
 
 		plot1.plot(prevList,muListX,'r')
 		plot2.plot(prevList,muListY,'r')
-		
+		'''
 
 		#print muListX
 
@@ -105,18 +107,35 @@ class update_transition_class:
 
 		mu2 = np.array(muListY)
 		sigmaVal2 = np.array(sigmaListY)
-
+		'''
 		plot1.fill_between(prevList,mu + sigmaVal,mu-sigmaVal, facecolor='green', interpolate=True)
 		plot2.fill_between(prevList,mu2 + sigmaVal2,mu2-sigmaVal2, facecolor='green', interpolate=True)		
 		plt.show(block=False)
-
+		'''
 		for i in states:
 			for k in actions:
 				mu, sigma = gp.predict( np.array( [i[0], i[1], k[0], k[1]] ), return_std=True, return_cov=False)
+				p[:] = []
+				temp = {((i[0],i[1]),(k[0],k[1])):sigma[0]}
+				global_var.sigmaDict = dict(global_var.sigmaDict.items() + temp.items())				
+				
+				stateValue = np.array([ i[0] +  mu[0][0] * global_var.delta_t, i[1] + mu[0][1] * global_var.delta_t])
+				
+				for j in states:
+					#prob = self.probability_of_states(j[0],j[1],mu[0],sigma*np.eye(2))
+					prob = self.probability_of_states(j[0],j[1],stateValue,sigma*np.eye(2))
+					p.append(round(prob,3))
+			
+				list_of_prob = zip(states,p)
+				temporary = {(i , k): list_of_prob}
+				
+				T = dict(T.items() + temporary.items() )
+				'''
 				a = np.around(mu[0][0])
 				b = np.around(mu[0][1])
 				temporary = {(i , k): (1, (max(min(a,GRID),-GRID) , max(min(b,GRID),-GRID) ) ) }
 				T = dict(T.items() + temporary.items() )
+				'''
 		#print T
 		return T
 	'''
@@ -124,9 +143,11 @@ class update_transition_class:
 
 	'''		
 			
-	def probability_of_states(self,state):
-		return 1
-
+	def probability_of_states(self, x, y, mu, var):
+		var = multivariate_normal (mean = mu, cov = var)
+		z = 0.5 * global_var.delta_t
+		area = dblquad(lambda X, Y: var.pdf( [X , Y]), y - z, y + z, lambda X: x - z, lambda X: x + z)
+		return area[0]
 
 	def coVariance(self,vector1, vector2 ):
 		vector1 = np.matrix(vector1)

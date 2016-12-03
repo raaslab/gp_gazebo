@@ -65,6 +65,9 @@ def agent_client():
     #r = rospy.Rate(20)
     action_client.wait_for_server()
 	# Some Random Number
+    '''
+    Initialize T
+    '''
     for j in range (0,initialTrainingEpisodes):
         action_value = random.randint(0,3)
         goal = gp_gazebo.msg.agentGoal(action=action_value)
@@ -74,7 +77,71 @@ def agent_client():
         action_client.wait_for_result()
 
     T = transition.upDate_transition(record)
-    plt.show()
+    U = updateObj.value_iteration ( T ,currentStates(currentEnv))
+    policy = updateObj.best_policy( U, T ,currentStates(currentEnv))
+    oldState = (-GRID,-GRID)
+
+    '''
+    GP-MFRL Algorithm
+    '''
+
+    for i in range(0,20):
+
+        while True:
+            print "-----------------------------------"
+            print sum(devQueue)
+            print "-----------------------------------"
+
+            if oldState != (GRID, GRID):
+                actionValue = policy [ oldState ]
+            else : actionValue = actionList[random.randint(0,3)]
+            #actionValue = policy [oldState]
+            if envList.index(currentEnv) != 0:
+                if check(oldState,currentEnv) and global_var.sigmaDict.get((oldState,actionValue),99) > sigmaThresh:
+                    currentEnv = envList[envList.index(currentEnv)-1]
+                    print "*************** PREVIOUS TRANSITION ***************"
+
+            currentState = currentEnv.environment( oldState , actionValue )
+            velocity = ((currentState[0] - oldState[0])/global_var.delta_t, (currentState[1] - oldState[1])/global_var.delta_t)
+            record.append( [oldState, actionValue, velocity] )
+            currSigma = global_var.sigmaDict.get((currentState,actionValue),999)
+            devQueue.appendleft(currSigma)
+            oldState = currentState
+            recordCounter = recordCounter + 1
+
+            if recordCounter == 10:
+                T = transition.upDate_transition(record,currentStates(currentEnv))
+                U = updateObj.value_iteration ( T ,currentStates(currentEnv))
+                policy = updateObj.best_policy( U, T ,currentStates(currentEnv))        
+                recordCounter = 0
+                if sum(devQueue) < sigma_sum_thresh:
+                    break
+        
+    print record
+    print len(record)
+        #FIND THE SIGMA VALUE and ADD
+
+    if (envList.index(currentEnv) + 1) != len(envList):
+        print 'MAKING TRANSITION'
+        currentEnv = envList[envList.index(currentEnv) + 1]
+        T = transition.upDate_transition(record,currentStates(currentEnv))
+        U = updateObj.value_iteration ( T ,currentStates(currentEnv))
+        policy = updateObj.best_policy( U, T ,currentStates(currentEnv))
+    #plot()
+        #T = transition.upDate_transition(record,currentStates(currentEnv))
+        #U = updateObj.value_iteration ( T ,currentStates(currentEnv))
+    print "==========="
+    print currentEnv
+    print "==========="
+    plot(global_i,policy)
+    global_i = global_i  + 1
+
+print T
+
+'''
+END OF ALGORITHM
+'''
+
 
 def done(integer,result):
     global action_value
