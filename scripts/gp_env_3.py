@@ -118,7 +118,7 @@ class agentAction(object):
 				print "********************* YOU Reached the goal ******************"
 				#self._feedback.terminal = True
 				self._result.reward = 50 
-				self._result.terminal = True
+				self._result.terminal = False
 
 			else: 
 			#self._feedback.terminal = False
