@@ -91,7 +91,7 @@ def agent_client():
     T = transition.upDate_transition(record,currentStates(currentEnv))
     U = updateObj.value_iteration ( T ,currentStates(currentEnv))
     policy = updateObj.best_policy( U, T ,currentStates(currentEnv))
-    oldState = (-GRID,-GRID)
+    old_state = (-GRID,-GRID)
     
 
     '''
@@ -105,27 +105,27 @@ def agent_client():
             print sum(devQueue)
             print "-----------------------------------"
 
-            if oldState != (GRID, GRID):
+            if old_state != (GRID, GRID):
                 actionValue = policy [ oldState ]
             else : actionValue = actionList[random.randint(0,3)]
             #actionValue = policy [oldState]
             if envList.index(currentEnv) != 0:
-                if check(oldState,currentEnv) and global_var.sigmaDict.get((oldState,actionValue),99) > sigmaThresh:
+                if check(old_state,currentEnv) and global_var.sigmaDict.get((old_state,actionValue),99) > sigmaThresh:
                     currentEnv = envList[envList.index(currentEnv)-1]
                     print "*************** PREVIOUS TRANSITION ***************"        
                     action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
                     print "action client init"
                     action_client.wait_for_server()
             if actionValue == (0,1):
-                goal_value = 0
+                action_value = 0
             elif actionValue == (-1,0):
-                 goal_value = 1
+                 action_value = 1
             elif actionValue == (0,-1):
-                 goal_value = 2
+                 action_value = 2
             elif actionValue == (1,0):
-                 goal_value = 3
+                 action_value = 3
 
-            goal = gp_gazebo.msg.agentGoal(action=goal_value)
+            goal = gp_gazebo.msg.agentGoal(action=action_value)
             action_client.send_goal(goal,done_cb= done)
             action_client.wait_for_result()
             
