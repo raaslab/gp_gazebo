@@ -2,6 +2,6 @@
 
 GRID = 4
 numOfActions = 4
-initialTrainingEpisodes = 5
+initialTrainingEpisodes = 15
 global delta_t
 global sigmDict

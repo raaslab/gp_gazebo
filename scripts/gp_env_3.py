@@ -11,6 +11,7 @@ import std_msgs.msg
 import actionlib
 import gp_gazebo.msg
 from global_var import GRID
+import global_var
 
 MAX_ACTIONS = 6
 MAX_STATES = 441 # THE GRID IS 20 * 20. We take all integrak coorindates as states
@@ -100,7 +101,7 @@ class agentAction(object):
 		if action_value != -1:    
 			for i in range(0,10):
 				localPosPub.publish(pose)
-				time.sleep(0.4)
+				time.sleep(0.5)
 		
 			currPose = rospy.wait_for_message("/mavros/local_position/pose" ,PoseStamped) 
 			'''

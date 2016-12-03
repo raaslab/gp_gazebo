@@ -12,6 +12,7 @@ import actionlib
 import matplotlib.pyplot as plt
 import gp_gazebo.msg
 import mavros
+import planner
 #import update_transition_class
 from mavros.utils import *
 from mavros_msgs.msg import State
@@ -35,12 +36,16 @@ devQueue = deque(10*[0],10)
 
 global_var.sigmaDict = {}
 global_var.delta_t = 4
-
-sigma_sum_thresh = 2
-sigmaThresh = 0.2 
+ 
 currentEnv = envList[0]
+transition = upDate_transition.update_transition_class()
+updateObj = planner.gprmax()
 
 def currentStates(currentEnvironmet):
+    global states1
+    global states2
+    global states3
+
     if currentEnvironmet == 'env1':
         return states1
     elif currentEnvironmet == 'env2':
@@ -49,6 +54,7 @@ def currentStates(currentEnvironmet):
         return states3
 
 def check(curr,currentEnvironment):
+    global envList
     return curr in currentStates(envList[envList.index(currentEnvironment)-1])
 
 
@@ -58,9 +64,14 @@ def agent_client():
     global old_state
     global next_state
     global record
-    transition = upDate_transition.update_transition_class()
+    global currentEnv
+    global transition
+    global updateObj
+    global envList
+    sigma_sum_thresh = 2
+    sigmaThresh = 0.2
     #set the publisher for sending the goals
-    action_client = actionlib.SimpleActionClient('env1',gp_gazebo.msg.agentAction)
+    action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
     print "action client init"
     #r = rospy.Rate(20)
     action_client.wait_for_server()
@@ -99,14 +110,16 @@ def agent_client():
             if envList.index(currentEnv) != 0:
                 if check(oldState,currentEnv) and global_var.sigmaDict.get((oldState,actionValue),99) > sigmaThresh:
                     currentEnv = envList[envList.index(currentEnv)-1]
-                    print "*************** PREVIOUS TRANSITION ***************"
-
-            currentState = currentEnv.environment( oldState , actionValue )
-            velocity = ((currentState[0] - oldState[0])/global_var.delta_t, (currentState[1] - oldState[1])/global_var.delta_t)
-            record.append( [oldState, actionValue, velocity] )
+                    print "*************** PREVIOUS TRANSITION ***************"        
+                    action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
+                    print "action client init"
+                    action_client.wait_for_server()
+            
+            action_client.send_goal(goal,done_cb= done)
+            action_client.wait_for_result()
+            
             currSigma = global_var.sigmaDict.get((currentState,actionValue),999)
             devQueue.appendleft(currSigma)
-            oldState = currentState
             recordCounter = recordCounter + 1
 
             if recordCounter == 10:
@@ -124,6 +137,10 @@ def agent_client():
     if (envList.index(currentEnv) + 1) != len(envList):
         print 'MAKING TRANSITION'
         currentEnv = envList[envList.index(currentEnv) + 1]
+        action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
+        print "action client init"
+        action_client.wait_for_server()
+
         T = transition.upDate_transition(record,currentStates(currentEnv))
         U = updateObj.value_iteration ( T ,currentStates(currentEnv))
         policy = updateObj.best_policy( U, T ,currentStates(currentEnv))
@@ -136,11 +153,11 @@ def agent_client():
     plot(global_i,policy)
     global_i = global_i  + 1
 
-print T
+    print T
 
-'''
-END OF ALGORITHM
-'''
+    '''
+    END OF ALGORITHM
+    '''
 
 
 def done(integer,result):

@@ -10,6 +10,9 @@ from matplotlib import pyplot as plt
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 from global_var import GRID,numOfActions
+import global_var
+from scipy.stats import multivariate_normal
+from scipy.integrate import dblquad
 
 np.random.seed(1)
 
@@ -50,7 +53,7 @@ class update_transition_class:
 		varSum1 = 0
 		varSum2 = 0
 		varSumoverall = 0
-		print state
+		#print state
 		'''
 		fig = plt.figure()
 
@@ -64,7 +67,7 @@ class update_transition_class:
 			sigmaListX.append(sigma[0])
 
 			if i >= -2 and i <= 2:
-				plot1.scatter(i,mu[0][0],marker='o', s=100, color='blue')
+				#plot1.scatter(i,mu[0][0],marker='o', s=100, color='blue')
 				varSum1 = varSum1 + sigma[0]
 			'''
 			print "============"
@@ -78,7 +81,7 @@ class update_transition_class:
 			sigmaListY.append(sigma2[0])
 
 			if i >= -GRID and i <= GRID:
-				plot2.scatter(i,mu2[0][1],marker='o', s=100, color='blue')
+				#plot2.scatter(i,mu2[0][1],marker='o', s=100, color='blue')
 				varSum2 = varSum2 + sigma2[0]
 			prevList.append(i)
 
@@ -100,7 +103,7 @@ class update_transition_class:
 
 		#print muListX
 
-		print sigmaListX
+		#print sigmaListX
 
 		mu = np.array(muListX)
 		sigmaVal = np.array(sigmaListX)
