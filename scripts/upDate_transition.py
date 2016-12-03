@@ -20,14 +20,14 @@ numOfStates = (GRID*2 + 1) * (GRID*2 + 1)
 
 class update_transition_class:
 
-	def upDate_transition(self,record):
+	def upDate_transition(self,record,states):
 
 		T = {}
 		probList = []
 		p = []
 
 		actions = [(1, 0), (-1, 0), (0, 1), (0, -1) ]
-		states = [ (i , j) for i in range(-GRID,GRID+1) for j in range(-GRID,GRID+1)]
+		#states = [ (i , j) for i in range(-GRID,GRID+1) for j in range(-GRID,GRID+1)]
 
 		training, target = [], []
 		for elements in record:

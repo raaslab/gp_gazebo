@@ -68,8 +68,9 @@ def agent_client():
     global transition
     global updateObj
     global envList
-    sigma_sum_thresh = 2
-    sigmaThresh = 0.2
+    global recordCounter
+    sigma_sum_thresh = 10
+    sigmaThresh = 1
     #set the publisher for sending the goals
     action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
     print "action client init"
@@ -87,13 +88,14 @@ def agent_client():
         print "GOAL SENT --> " + str(goal) 
         action_client.wait_for_result()
 
-    T = transition.upDate_transition(record)
+    T = transition.upDate_transition(record,currentStates(currentEnv))
     U = updateObj.value_iteration ( T ,currentStates(currentEnv))
     policy = updateObj.best_policy( U, T ,currentStates(currentEnv))
     oldState = (-GRID,-GRID)
+    
 
     '''
-    GP-MFRL Algorithm
+    #GP-MFRL Algorithm
     '''
 
     for i in range(0,20):
@@ -114,11 +116,20 @@ def agent_client():
                     action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
                     print "action client init"
                     action_client.wait_for_server()
-            
+            if actionValue == (0,1):
+                goal_value = 0
+            elif actionValue == (-1,0):
+                 goal_value = 1
+            elif actionValue == (0,-1):
+                 goal_value = 2
+            elif actionValue == (1,0):
+                 goal_value = 3
+
+            goal = gp_gazebo.msg.agentGoal(action=goal_value)
             action_client.send_goal(goal,done_cb= done)
             action_client.wait_for_result()
             
-            currSigma = global_var.sigmaDict.get((currentState,actionValue),999)
+            currSigma = global_var.sigmaDict.get((next_state,actionValue),99)
             devQueue.appendleft(currSigma)
             recordCounter = recordCounter + 1
 
@@ -130,35 +141,32 @@ def agent_client():
                 if sum(devQueue) < sigma_sum_thresh:
                     break
         
-    print record
-    print len(record)
+        print record
+        print len(record)
         #FIND THE SIGMA VALUE and ADD
+        if (envList.index(currentEnv) + 1) != len(envList):
+            print 'MAKING TRANSITION'
+            currentEnv = envList[envList.index(currentEnv) + 1]
+            action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
+            print "action client init"
+            action_client.wait_for_server()
 
-    if (envList.index(currentEnv) + 1) != len(envList):
-        print 'MAKING TRANSITION'
-        currentEnv = envList[envList.index(currentEnv) + 1]
-        action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
-        print "action client init"
-        action_client.wait_for_server()
-
-        T = transition.upDate_transition(record,currentStates(currentEnv))
-        U = updateObj.value_iteration ( T ,currentStates(currentEnv))
-        policy = updateObj.best_policy( U, T ,currentStates(currentEnv))
-    #plot()
-        #T = transition.upDate_transition(record,currentStates(currentEnv))
-        #U = updateObj.value_iteration ( T ,currentStates(currentEnv))
-    print "==========="
-    print currentEnv
-    print "==========="
-    plot(global_i,policy)
-    global_i = global_i  + 1
+            T = transition.upDate_transition(record,currentStates(currentEnv))
+            U = updateObj.value_iteration ( T ,currentStates(currentEnv))
+            policy = updateObj.best_policy( U, T ,currentStates(currentEnv))
+        #plot()
+            #T = transition.upDate_transition(record,currentStates(currentEnv))
+            #U = updateObj.value_iteration ( T ,currentStates(currentEnv))
+        print "==========="
+        print currentEnv
+        print "==========="
 
     print T
 
     '''
-    END OF ALGORITHM
+    #END OF ALGORITHM
     '''
-
+    
 
 def done(integer,result):
     global action_value

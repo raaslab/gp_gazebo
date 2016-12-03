@@ -12,7 +12,7 @@ import actionlib
 import gp_gazebo.msg
 from global_var import GRID
 import global_var
-s
+
 MAX_ACTIONS = 6
 MAX_STATES = 441 # THE GRID IS 20 * 20. We take all integrak coorindates as states
 
