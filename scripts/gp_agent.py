@@ -23,10 +23,11 @@ import global_var
 from collections import deque
 #currentState = 0
 action_value = 0
-old_state = (0,0)
+old_state = (-GRID,GRID)
 next_state = (0,0)
 #plannerObj = None
 record = []
+
 envList = ['env3','env2','env1']
 states1 = [ (i , j) for i in xrange(-GRID,GRID+1,1) for j in xrange(-GRID,GRID+1,1)]
 states2 = [ (i , j) for i in xrange(-GRID,GRID+1,2) for j in xrange(-GRID,GRID+1,2)]
@@ -69,8 +70,9 @@ def agent_client():
     global updateObj
     global envList
     global recordCounter
-    sigma_sum_thresh = 10
-    sigmaThresh = 1
+    sigma_sum_thresh = 100
+    sigmaThresh = 10
+    actionList = [(0,1),(1,0),(0,-1),(-1,0)]
     #set the publisher for sending the goals
     action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
     print "action client init"
@@ -106,7 +108,7 @@ def agent_client():
             print "-----------------------------------"
 
             if old_state != (GRID, GRID):
-                actionValue = policy [ oldState ]
+                actionValue = policy [old_state]
             else : actionValue = actionList[random.randint(0,3)]
             #actionValue = policy [oldState]
             if envList.index(currentEnv) != 0:
@@ -200,4 +202,3 @@ if __name__ == '__main__':
         #rospy.spin()
     except rospy.ROSInterruptException:
         print "program interrupted before completion"
-        pass
