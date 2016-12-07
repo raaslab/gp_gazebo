@@ -101,7 +101,7 @@ class agentAction(object):
 		if action_value != -1:    
 			for i in range(0,10):
 				localPosPub.publish(pose)
-				time.sleep(0.35)
+				time.sleep(0.4)
 		
 			currPose = rospy.wait_for_message("/mavros/local_position/pose" ,PoseStamped) 
 			'''

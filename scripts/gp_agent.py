@@ -23,7 +23,7 @@ import global_var
 from collections import deque
 #currentState = 0
 action_value = 0
-old_state = (-GRID,GRID)
+old_state = (-GRID,-GRID)
 next_state = (0,0)
 #plannerObj = None
 record = []
@@ -107,7 +107,7 @@ def agent_client():
             print sum(devQueue)
             print "-----------------------------------"
 
-            if old_state != (GRID, GRID):
+            if (old_state != (GRID, GRID)) and (old_state in currentStates(currentEnv)) :
                 actionValue = policy [old_state]
             else : actionValue = actionList[random.randint(0,3)]
             #actionValue = policy [oldState]
@@ -182,6 +182,7 @@ def done(integer,result):
         if result.terminal == False:
             if result.reward != 0:
                 next_state = (result.state[0],result.state[1])
+                #next_state = (max(min(result.state[0],GRID),-GRID) , max(min(result.state[1],GRID),-GRID))
                 if action_value == 0:
                     action_value_append = (0,1)
                 elif action_value == 1:
