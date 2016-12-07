@@ -70,8 +70,8 @@ def agent_client():
     global updateObj
     global envList
     global recordCounter
-    sigma_sum_thresh = 100
-    sigmaThresh = 10
+    sigma_sum_thresh = 2
+    sigmaThresh = 0.2
     actionList = [(0,1),(1,0),(0,-1),(-1,0)]
     #set the publisher for sending the goals
     action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
