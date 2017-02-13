@@ -18,7 +18,7 @@ from mavros.utils import *
 from mavros_msgs.msg import State
 from mavros_msgs.srv import SetMode, StreamRate, StreamRateRequest, CommandBool, CommandTOL
 from geometry_msgs.msg import *
-from global_var import initialTrainingEpisodes, GRID
+from global_var import initialTrainingEpisodes, GRID, current_state_for_grid_world_reference
 import global_var
 from collections import deque
 #currentState = 0
@@ -28,7 +28,7 @@ next_state = (0,0)
 #plannerObj = None
 record = []
 
-envList = ['env3','grid','gazebo']
+envList = ['grid','gazebo']
 states1 = [ (i , j) for i in xrange(-GRID,GRID+1,1) for j in xrange(-GRID,GRID+1,1)]
 states2 = [ (i , j) for i in xrange(-GRID,GRID+1,2) for j in xrange(-GRID,GRID+1,2)]
 states3 = [ (i , j) for i in xrange(-GRID,GRID+1,4) for j in xrange(-GRID,GRID+1,4)]
@@ -46,15 +46,16 @@ def currentStates(currentEnvironmet):
     global states1
     global states2
     global states3
-
+    '''
     if currentEnvironmet == 'env1':
         return states1
     elif currentEnvironmet == 'env2':
         return states2
     elif currentEnvironmet == 'env3':
         return states3
-    else:
-        return states1
+    '''
+    
+    return states1
 
 def check(curr,currentEnvironment):
     global envList
@@ -72,7 +73,6 @@ def agent_client():
     global updateObj
     global envList
     global recordCounter
-    global current_state_for_grid_world_reference
     sigma_sum_threshX = 0.3
     sigmaThreshX = 1.2
     sigma_sum_threshY = 1.2

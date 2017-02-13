@@ -6,4 +6,4 @@ initialTrainingEpisodes = 5
 global delta_t
 global sigmaDictX
 global sigmaDictY
-global current_state_for_grid_world_reference
+current_state_for_grid_world_reference = (-GRID,-GRID)

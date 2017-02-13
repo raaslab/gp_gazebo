@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import numpy as np
 import rospy
 import mavros
 from mavros.utils import *
@@ -10,7 +11,7 @@ import math
 import std_msgs.msg
 import actionlib
 import gp_gazebo.msg
-from global_var import GRID
+from global_var import GRID, current_state_for_grid_world_reference
 import global_var
 
 MAX_ACTIONS = 6
@@ -39,7 +40,6 @@ class agentAction(object):
 
 	def execute(self,goal):
 
-		global current_state_for_grid_world_reference
 		# sigma * np.random.randn(...) + mu	
 		action_value = goal.action
 		if action_value == 0:
@@ -54,7 +54,7 @@ class agentAction(object):
 		mu = 0
 		sigma = 0.15
 		noise = sigma * np.random.randn() + mu
-		state = current_state_for_grid_world_reference
+		state = global_var.current_state_for_grid_world_reference
 		#noise = 0
 		a = int(round(state[0] + action[0] * global_var.delta_t + noise))
 		b = int(round(state[1] + action[1] * global_var.delta_t + noise)) 
@@ -75,7 +75,7 @@ class agentAction(object):
 
 		print "CURRENT STATE"
 		print currentState
-		
+
 		self._result.state.insert(0,currentState[0])
 		self._result.state.insert(1,currentState[1])
 
