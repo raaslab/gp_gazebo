@@ -6,13 +6,13 @@ import time
 import random
 import math
 import std_msgs.msg
-import upDate_transition
+import update_gp_new
 import matplotlib.pyplot as plt
 import actionlib
 import matplotlib.pyplot as plt
 import gp_gazebo.msg
 import mavros
-import planner
+import planner_new
 #import update_transition_class
 from mavros.utils import *
 from mavros_msgs.msg import State
@@ -33,14 +33,14 @@ states1 = [ (i , j) for i in xrange(-GRID,GRID+1,1) for j in xrange(-GRID,GRID+1
 states2 = [ (i , j) for i in xrange(-GRID,GRID+1,2) for j in xrange(-GRID,GRID+1,2)]
 states3 = [ (i , j) for i in xrange(-GRID,GRID+1,4) for j in xrange(-GRID,GRID+1,4)]
 recordCounter = 0
-devQueue = deque(10*[0],10)
 
-global_var.sigmaDict = {}
+global_var.sigmaDictX = {}
+global_var.sigmaDictY = {}
 global_var.delta_t = 4
  
 currentEnv = envList[0]
-transition = upDate_transition.update_transition_class()
-updateObj = planner.gprmax()
+transition = update_gp_new.update_transition_class()
+updateObj = planner_new.gprmax()
 
 def currentStates(currentEnvironmet):
     global states1
@@ -70,9 +70,14 @@ def agent_client():
     global updateObj
     global envList
     global recordCounter
-    sigma_sum_thresh = 2
-    sigmaThresh = 0.2
+    sigma_sum_threshX = 0.3
+    sigmaThreshX = 1.2
+    sigma_sum_threshY = 1.2
+    sigmaThreshY = 0.3
     actionList = [(0,1),(1,0),(0,-1),(-1,0)]
+
+    devQueueX = deque([], 5)
+    devQueueY = deque([], 5)
     #set the publisher for sending the goals
     action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
     print "action client init"
@@ -100,24 +105,20 @@ def agent_client():
     #GP-MFRL Algorithm
     '''
 
-    for i in range(0,20):
+    for i in range(0,35):
 
-        while True:
-            print "-----------------------------------"
-            print sum(devQueue)
-            print "-----------------------------------"
-
-            if (old_state != (GRID, GRID)) and (old_state in currentStates(currentEnv)) :
-                actionValue = policy [old_state]
-            else : actionValue = actionList[random.randint(0,3)]
-            #actionValue = policy [oldState]
-            if envList.index(currentEnv) != 0:
-                if check(old_state,currentEnv) and global_var.sigmaDict.get((old_state,actionValue),99) > sigmaThresh:
-                    currentEnv = envList[envList.index(currentEnv)-1]
-                    print "*************** PREVIOUS TRANSITION ***************"        
-                    action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
-                    print "action client init"
-                    action_client.wait_for_server()
+        actionValue = actionList[random.randint(0,3)]
+        #actionValue = policy [oldState]
+        if envList.index(currentEnv) > 0 and check(old_state,currentEnv):
+            currentEnv = envList[envList.index(currentEnv)-1]
+            print "*************** PREVIOUS TRANSITION ***************"        
+            # New action client init
+            action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
+            print "action client init"
+            action_client.wait_for_server()
+    
+        while (sum(devQueueX) > sigma_sum_threshX or sum(devQueueY) > sigma_sum_threshY) or len(devQueueY) < 5:     
+    
             if actionValue == (0,1):
                 action_value = 0
             elif actionValue == (-1,0):
@@ -131,37 +132,41 @@ def agent_client():
             action_client.send_goal(goal,done_cb= done)
             action_client.wait_for_result()
             
-            currSigma = global_var.sigmaDict.get((next_state,actionValue),99)
-            devQueue.appendleft(currSigma)
+            currSigmaX = global_var.sigmaDictX.get((next_state[0],actionValue[0]),999)
+            currSigmaY = global_var.sigmaDictX.get((next_state[1],actionValue[1]),999)
+            
+            devQueueX.appendleft(currSigmaX)
+            devQueueY.appendleft(currSigmaY)
+            
             recordCounter = recordCounter + 1
 
-            if recordCounter == 10:
+            if recordCounter == 7:
                 T = transition.upDate_transition(record,currentStates(currentEnv))
-                U = updateObj.value_iteration ( T ,currentStates(currentEnv))
-                policy = updateObj.best_policy( U, T ,currentStates(currentEnv))        
+                #U = updateObj.value_iteration ( T ,currentStates(currentEnv))
+                #policy = updateObj.best_policy( U, T ,currentStates(currentEnv))        
                 recordCounter = 0
-                if sum(devQueue) < sigma_sum_thresh:
-                    break
-        
-        print record
-        print len(record)
+          
         #FIND THE SIGMA VALUE and ADD
         if (envList.index(currentEnv) + 1) != len(envList):
             print 'MAKING TRANSITION'
+            devQueueX = deque([], 5)
+            devQueueY = deque([], 5)
             currentEnv = envList[envList.index(currentEnv) + 1]
             action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
             print "action client init"
             action_client.wait_for_server()
 
             T = transition.upDate_transition(record,currentStates(currentEnv))
-            U = updateObj.value_iteration ( T ,currentStates(currentEnv))
-            policy = updateObj.best_policy( U, T ,currentStates(currentEnv))
-        #plot()
-            #T = transition.upDate_transition(record,currentStates(currentEnv))
-            #U = updateObj.value_iteration ( T ,currentStates(currentEnv))
+    
         print "==========="
         print currentEnv
         print "==========="
+
+    U = updateObj.value_iteration ( T ,currentStates(currentEnv))
+    policy = updateObj.best_policy( U, T ,currentStates(currentEnv))
+        #plot()
+            #T = transition.upDate_transition(record,currentStates(currentEnv))
+            #U = updateObj.value_iteration ( T ,currentStates(currentEnv))
 
     print T
 
