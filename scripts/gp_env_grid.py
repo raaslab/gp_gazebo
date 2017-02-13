@@ -54,7 +54,7 @@ class agentAction(object):
 		mu = 0
 		sigma = 0.15
 		noise = sigma * np.random.randn() + mu
-		state = global_var.current_state_for_grid_world_reference
+		state = current_state_for_grid_world_reference
 		#noise = 0
 		a = int(round(state[0] + action[0] * global_var.delta_t + noise))
 		b = int(round(state[1] + action[1] * global_var.delta_t + noise)) 

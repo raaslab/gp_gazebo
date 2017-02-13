@@ -137,7 +137,6 @@ def agent_client():
             goal = gp_gazebo.msg.agentGoal(action=action_value)
             action_client.send_goal(goal,done_cb= done)
             action_client.wait_for_result()
-            current_state_for_grid_world_reference = old_state
             
             currSigmaX = global_var.sigmaDictX.get((next_state[0],actionValue[0]),999)
             currSigmaY = global_var.sigmaDictX.get((next_state[1],actionValue[1]),999)
@@ -206,6 +205,7 @@ def done(integer,result):
                 velocity =  ((next_state[0] - old_state[0])/global_var.delta_t, (next_state[1] - old_state[1])/global_var.delta_t)
                 record.append( [old_state, action_value_append, next_state] )
                 old_state = next_state
+                current_state_for_grid_world_reference = old_state
 
 
 if __name__ == '__main__':
