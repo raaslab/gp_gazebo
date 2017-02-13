@@ -28,7 +28,7 @@ next_state = (0,0)
 #plannerObj = None
 record = []
 
-envList = ['env3','env2','env1']
+envList = ['env3','grid','gazebo']
 states1 = [ (i , j) for i in xrange(-GRID,GRID+1,1) for j in xrange(-GRID,GRID+1,1)]
 states2 = [ (i , j) for i in xrange(-GRID,GRID+1,2) for j in xrange(-GRID,GRID+1,2)]
 states3 = [ (i , j) for i in xrange(-GRID,GRID+1,4) for j in xrange(-GRID,GRID+1,4)]
@@ -53,6 +53,8 @@ def currentStates(currentEnvironmet):
         return states2
     elif currentEnvironmet == 'env3':
         return states3
+    else:
+        return states1
 
 def check(curr,currentEnvironment):
     global envList
@@ -70,6 +72,7 @@ def agent_client():
     global updateObj
     global envList
     global recordCounter
+    global current_state_for_grid_world_reference
     sigma_sum_threshX = 0.3
     sigmaThreshX = 1.2
     sigma_sum_threshY = 1.2
@@ -87,6 +90,9 @@ def agent_client():
     '''
     Initialize T
     '''
+    # Inti
+    current_state_for_grid_world_reference = old_state
+
     for j in range (0,initialTrainingEpisodes):
         action_value = random.randint(0,3)
         goal = gp_gazebo.msg.agentGoal(action=action_value)
@@ -131,6 +137,7 @@ def agent_client():
             goal = gp_gazebo.msg.agentGoal(action=action_value)
             action_client.send_goal(goal,done_cb= done)
             action_client.wait_for_result()
+            current_state_for_grid_world_reference = old_state
             
             currSigmaX = global_var.sigmaDictX.get((next_state[0],actionValue[0]),999)
             currSigmaY = global_var.sigmaDictX.get((next_state[1],actionValue[1]),999)
