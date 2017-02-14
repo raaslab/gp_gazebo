@@ -73,10 +73,10 @@ def agent_client():
     global updateObj
     global envList
     global recordCounter
-    sigma_sum_threshX = 0.3
-    sigmaThreshX = 1.2
+    sigma_sum_threshX = 1.2
+    sigmaThreshX = .2
     sigma_sum_threshY = 1.2
-    sigmaThreshY = 0.3
+    sigmaThreshY = 0.2
     actionList = [(0,1),(1,0),(0,-1),(-1,0)]
 
     devQueueX = deque([], 5)
@@ -92,7 +92,6 @@ def agent_client():
     '''
     # Inti
     current_state_for_grid_world_reference = old_state
-
     for j in range (0,initialTrainingEpisodes):
         action_value = random.randint(0,3)
         goal = gp_gazebo.msg.agentGoal(action=action_value)
@@ -106,16 +105,14 @@ def agent_client():
     policy = updateObj.best_policy( U, T ,currentStates(currentEnv))
     old_state = (-GRID,-GRID)
     
-
     '''
     #GP-MFRL Algorithm
     '''
-
-    for i in range(0,35):
+    for i in range(0,20):
 
         actionValue = actionList[random.randint(0,3)]
         #actionValue = policy [oldState]
-        if envList.index(currentEnv) > 0 and check(old_state,currentEnv):
+        if envList.index(currentEnv) > 0 and check(old_state,currentEnv) and global_var.sigmaDictX.get((int(old_state[0]),actionValue[0]),99) > sigmaThreshX and global_var.sigmaDictY.get((int(old_state[1]),actionValue[1]),99) > sigmaThreshY:
             currentEnv = envList[envList.index(currentEnv)-1]
             print "*************** PREVIOUS TRANSITION ***************"        
             # New action client init
@@ -124,7 +121,8 @@ def agent_client():
             action_client.wait_for_server()
     
         while (sum(devQueueX) > sigma_sum_threshX or sum(devQueueY) > sigma_sum_threshY) or len(devQueueY) < 5:     
-    
+    		
+            
             if actionValue == (0,1):
                 action_value = 0
             elif actionValue == (-1,0):
@@ -137,13 +135,15 @@ def agent_client():
             goal = gp_gazebo.msg.agentGoal(action=action_value)
             action_client.send_goal(goal,done_cb= done)
             action_client.wait_for_result()
-            
-            currSigmaX = global_var.sigmaDictX.get((next_state[0],actionValue[0]),999)
-            currSigmaY = global_var.sigmaDictX.get((next_state[1],actionValue[1]),999)
-            
+            currSigmaX = global_var.sigmaDictX.get((int(next_state[0]),actionValue[0]),999)
+            currSigmaY = global_var.sigmaDictY.get((int(next_state[1]),actionValue[1]),999)
+            print '$$$$$$$$$$$'
+            print currSigmaX
+            print currSigmaY
+            print '$$$$$$$$$$$'
             devQueueX.appendleft(currSigmaX)
             devQueueY.appendleft(currSigmaY)
-            
+
             recordCounter = recordCounter + 1
 
             if recordCounter == 7:
@@ -174,7 +174,6 @@ def agent_client():
             #T = transition.upDate_transition(record,currentStates(currentEnv))
             #U = updateObj.value_iteration ( T ,currentStates(currentEnv))
 
-    print T
 
     '''
     #END OF ALGORITHM
@@ -189,7 +188,7 @@ def done(integer,result):
     action_value_append = ()
 
     if integer == 3:
-
+    	print action_value
         if result.terminal == False:
             if result.reward != 0:
                 next_state = (result.state[0],result.state[1])
