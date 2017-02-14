@@ -47,10 +47,11 @@ def currentStates(currentEnvironmet):
     global states2
     global states3
     '''
-    if currentEnvironmet == 'env1':
-        return states1
-    elif currentEnvironmet == 'env2':
+    if currentEnvironmet == 'grid':
         return states2
+    elif currentEnvironmet == 'gazebo':
+        return states1
+    
     elif currentEnvironmet == 'env3':
         return states3
     '''
@@ -61,6 +62,15 @@ def check(curr,currentEnvironment):
     global envList
     return curr in currentStates(envList[envList.index(currentEnvironment)-1])
 
+def plot(policy):
+    fig = plt.figure(2)
+    plt.ion()
+    for x in xrange(-GRID, GRID + 1, global_var.delta_t):
+        for y in xrange(-GRID, GRID + 1, global_var.delta_t):
+            plt.scatter(x,y, marker='o', s=30, color='yellow')
+            a,b = policy[x,y]
+            plt.quiver(x,y,a,b)
+            
 
 def agent_client():
 
@@ -73,10 +83,10 @@ def agent_client():
     global updateObj
     global envList
     global recordCounter
-    sigma_sum_threshX = 1.2
-    sigmaThreshX = .2
-    sigma_sum_threshY = 1.2
-    sigmaThreshY = 0.2
+    sigma_sum_threshX = [0.2,0.8]
+    sigmaThreshX = [0.04,0.2]
+    sigma_sum_threshY = [0.2,0.8]
+    sigmaThreshY = [0.04,0.2]
     actionList = [(0,1),(1,0),(0,-1),(-1,0)]
 
     devQueueX = deque([], 5)
@@ -108,11 +118,11 @@ def agent_client():
     '''
     #GP-MFRL Algorithm
     '''
-    for i in range(0,20):
+    for i in range(0,50):
 
         actionValue = actionList[random.randint(0,3)]
         #actionValue = policy [oldState]
-        if envList.index(currentEnv) > 0 and check(old_state,currentEnv) and global_var.sigmaDictX.get((int(old_state[0]),actionValue[0]),99) > sigmaThreshX and global_var.sigmaDictY.get((int(old_state[1]),actionValue[1]),99) > sigmaThreshY:
+        if envList.index(currentEnv) > 0 and check(old_state,currentEnv) and global_var.sigmaDictX.get((int(old_state[0]),actionValue[0]),99) > sigmaThreshX[envList.index(currentEnv)-1] and global_var.sigmaDictY.get((int(old_state[1]),actionValue[1]),99) > sigmaThreshY[envList.index(currentEnv)-1]:
             currentEnv = envList[envList.index(currentEnv)-1]
             print "*************** PREVIOUS TRANSITION ***************"        
             # New action client init
@@ -120,9 +130,9 @@ def agent_client():
             print "action client init"
             action_client.wait_for_server()
     
-        while (sum(devQueueX) > sigma_sum_threshX or sum(devQueueY) > sigma_sum_threshY) or len(devQueueY) < 5:     
+        while (sum(devQueueX) > sigma_sum_threshX[envList.index(currentEnv)] or sum(devQueueY) > sigma_sum_threshY[envList.index(currentEnv)]) or len(devQueueY) < 5:     
     		
-            
+            actionValue = actionList[random.randint(0,3)]
             if actionValue == (0,1):
                 action_value = 0
             elif actionValue == (-1,0):

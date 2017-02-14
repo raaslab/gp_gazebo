@@ -124,7 +124,7 @@ class agentAction(object):
 			#self._feedback.terminal = False
 				self._result.reward= -1
 				self._result.terminal = False
-				print "2 unit movement"
+				print "1 unit movement"
 
 			self._result.state.insert(0,currentX)
 			self._result.state.insert(1,currentY)

@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-GRID = 2
+GRID = 4
 numOfActions = 4
-initialTrainingEpisodes = 20
+initialTrainingEpisodes = 10
 global delta_t
 global sigmaDictX
 global sigmaDictY
