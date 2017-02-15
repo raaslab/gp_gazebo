@@ -42,7 +42,15 @@ class agentAction(object):
 		oldX = 0
 		oldY = 0
 		oldZ = 0
-		
+		'''
+		Description of one wall. 
+		From x=4,y =-4 to x =-4 y = 4
+		'''
+
+		WALL_NS_Y = -4
+		WALL_NS_XMIN = -4
+		WALL_NS_XMAX = 4
+
 		#self._result.reward = 1
 		#self._feedback.reward = -1
 		#self._as.publish_feedback(self._feedback)	
@@ -113,19 +121,18 @@ class agentAction(object):
 
 			print "CURRENT POSITION" + str(currentX) + "," + str(currentY) + "," + str(currentZ) 
 			# IF UAV HITS THE OBSTACLES
-
+			'''
 			if ((GOAL_STATE_X == currentX) and (GOAL_STATE_Y == currentY) and (2 == currentZ)):
 				print "********************* YOU Reached the goal ******************"
 				#self._feedback.terminal = True
 				self._result.reward = 50 
 				self._result.terminal = False
-
+			
 			else: 
-			#self._feedback.terminal = False
 				self._result.reward= -1
 				self._result.terminal = False
 				print "1 unit movement"
-
+			'''
 			self._result.state.insert(0,currentX)
 			self._result.state.insert(1,currentY)
 			self._result.state.insert(2,currentZ)

@@ -36,11 +36,17 @@ recordCounter = 0
 
 global_var.sigmaDictX = {}
 global_var.sigmaDictY = {}
-global_var.delta_t = 4
+global_var.delta_t = 1
  
 currentEnv = envList[0]
 transition = update_gp_new.update_transition_class()
 updateObj = planner_new.gprmax()
+
+fig = plt.figure(2)
+plt.ion()
+for x in xrange(-GRID, GRID + 1, global_var.delta_t):
+    for y in xrange(-GRID, GRID + 1, global_var.delta_t):
+        plt.scatter(x,y, marker='o', s=100, color='red')
 
 def currentStates(currentEnvironmet):
     global states1
@@ -61,16 +67,7 @@ def currentStates(currentEnvironmet):
 def check(curr,currentEnvironment):
     global envList
     return curr in currentStates(envList[envList.index(currentEnvironment)-1])
-
-def plot(policy):
-    fig = plt.figure(2)
-    plt.ion()
-    for x in xrange(-GRID, GRID + 1, global_var.delta_t):
-        for y in xrange(-GRID, GRID + 1, global_var.delta_t):
-            plt.scatter(x,y, marker='o', s=30, color='yellow')
-            a,b = policy[x,y]
-            plt.quiver(x,y,a,b)
-            
+  
 
 def agent_client():
 
@@ -111,8 +108,8 @@ def agent_client():
         action_client.wait_for_result()
 
     T = transition.upDate_transition(record,currentStates(currentEnv))
-    U = updateObj.value_iteration ( T ,currentStates(currentEnv))
-    policy = updateObj.best_policy( U, T ,currentStates(currentEnv))
+    U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
+    policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
     old_state = (-GRID,-GRID)
     
     '''
@@ -158,10 +155,15 @@ def agent_client():
 
             if recordCounter == 7:
                 T = transition.upDate_transition(record,currentStates(currentEnv))
-                #U = updateObj.value_iteration ( T ,currentStates(currentEnv))
-                #policy = updateObj.best_policy( U, T ,currentStates(currentEnv))        
+                U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
+                policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)        
                 recordCounter = 0
-          
+                plt.quiver(next_state[0],next_state[1],actionValue[0],actionValue[1])
+                #plt.scatter(next_state[0],next_state[1], marker='o', s=500, color='blue')
+                plt.scatter(old_state[0],old_state[1], marker='o', s=100, color='red')
+                plt.pause(0.001)   
+
+        plt.show()
         #FIND THE SIGMA VALUE and ADD
         if (envList.index(currentEnv) + 1) != len(envList):
             print 'MAKING TRANSITION'
@@ -178,8 +180,8 @@ def agent_client():
         print currentEnv
         print "==========="
 
-    U = updateObj.value_iteration ( T ,currentStates(currentEnv))
-    policy = updateObj.best_policy( U, T ,currentStates(currentEnv))
+    U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
+    policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
         #plot()
             #T = transition.upDate_transition(record,currentStates(currentEnv))
             #U = updateObj.value_iteration ( T ,currentStates(currentEnv))

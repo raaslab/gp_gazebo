@@ -15,7 +15,7 @@ class gprmax:
         self.actions = actions
         #self.states= [(x,y) for x in range(-GRID,GRID+1) for y in range(-GRID,GRID+1)]
     
-    def value_iteration( self, T ,states):
+    def value_iteration( self, T ,states,env):
             
         U1 = dict([(s, 0) for s in states ])
         li = []
@@ -36,7 +36,7 @@ class gprmax:
                     pList = T [( s , a )]
                     #p,s1 = T [( s , a )]
                     for INDEX in range(0, len(pList)):
-                        li.append(self.gamma * U1[pList[INDEX][0]] * pList[INDEX][1] + pList[INDEX][1] * self.reward_dynmaics(pList[INDEX][0]))    
+                        li.append(self.gamma * U1[pList[INDEX][0]] * pList[INDEX][1] + pList[INDEX][1] * self.reward_dynmaics(pList[INDEX][0],env))    
                 
                     li_final.append(sum(li))
                     #li.append(self.gamma * U1[s1] * p + self.reward_dynmaics(s1))    
@@ -50,7 +50,7 @@ class gprmax:
                 return U1
 
 
-    def best_policy(self, U, T,states):
+    def best_policy(self, U, T,states,env):
         pi = {}
         for s in states:
             li=[]
@@ -59,7 +59,7 @@ class gprmax:
                 li[:] = []
                 pList = T [( s , a )]
                 for INDEX in range(0,len(pList)):
-                    li.append(self.gamma * U[pList[INDEX][0]] * pList[INDEX][1] + pList[INDEX][1]* self.reward_dynmaics(pList[INDEX][0]) )
+                    li.append(self.gamma * U[pList[INDEX][0]] * pList[INDEX][1] + pList[INDEX][1]* self.reward_dynmaics(pList[INDEX][0],env) )
                 li_final.append(sum(li))
                 #p,s1 = T [( s , a )]
                 #li.append(self.gamma * U[s1] * p + self.reward_dynmaics(s1) )
@@ -78,7 +78,7 @@ class gprmax:
         
 
                  # Still has to define
-    def reward_dynmaics(self , state):
+    def reward_dynmaics(self , state,env):
         if state == (GRID,GRID) : return 50
         #elif state == (2, -1) : return -30  
         #elif state == (2, 1) : return -30 
