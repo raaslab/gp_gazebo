@@ -109,7 +109,7 @@ class agentAction(object):
 		if action_value != -1:    
 			for i in range(0,10):
 				localPosPub.publish(pose)
-				time.sleep(0.3)
+				time.sleep(0.4)
 		
 			currPose = rospy.wait_for_message("/mavros/local_position/pose" ,PoseStamped) 
 			'''
@@ -133,9 +133,9 @@ class agentAction(object):
 				self._result.terminal = False
 				print "1 unit movement"
 			'''
-			self._result.state.insert(0,currentX)
-			self._result.state.insert(1,currentY)
-			self._result.state.insert(2,currentZ)
+			self._result.state.insert(0, currentX)
+			self._result.state.insert(1, currentY)
+			#self._result.state.insert(2, currentZ)
 
 			self._as.set_succeeded(self._result)
 			self._result.state[:]=[]

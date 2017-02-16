@@ -63,7 +63,7 @@ class agentAction(object):
 		currentState  = (max(min(a,GRID),-GRID), max(min(b,GRID),-GRID))
 		global_var.current_state_for_grid_world_reference = currentState
 		#print 'CS' + str(currentState)
-		print currentState
+		# print currentState
 		if ((GOAL_STATE_X == currentState[0]) and (GOAL_STATE_Y == currentState[1])):
 			print "********************* YOU Reached the goal ******************"
 			#self._feedback.terminal = True

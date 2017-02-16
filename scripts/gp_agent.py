@@ -23,7 +23,7 @@ import global_var
 from collections import deque
 #currentState = 0
 action_value = 0
-old_state = (-GRID,-GRID)
+old_state = (-GRID, -GRID)
 next_state = (0,0)
 #plannerObj = None
 record = []
@@ -80,10 +80,10 @@ def agent_client():
     global updateObj
     global envList
     global recordCounter
-    sigma_sum_threshX = [0.2,0.8]
-    sigmaThreshX = [0.04,0.2]
-    sigma_sum_threshY = [0.2,0.8]
-    sigmaThreshY = [0.04,0.2]
+    sigma_sum_threshX = [0.8, 0.8]
+    sigmaThreshX = [0.2, 0.2]
+    sigma_sum_threshY = [0.8, 0.8]
+    sigmaThreshY = [0.2, 0.2]
     actionList = [(0,1),(1,0),(0,-1),(-1,0)]
 
     devQueueX = deque([], 5)
@@ -115,21 +115,21 @@ def agent_client():
     '''
     #GP-MFRL Algorithm
     '''
-    for i in range(0,50):
+    for i in range(0,20):
 
         actionValue = actionList[random.randint(0,3)]
         #actionValue = policy [oldState]
-        if envList.index(currentEnv) > 0 and check(old_state,currentEnv) and global_var.sigmaDictX.get((int(old_state[0]),actionValue[0]),99) > sigmaThreshX[envList.index(currentEnv)-1] and global_var.sigmaDictY.get((int(old_state[1]),actionValue[1]),99) > sigmaThreshY[envList.index(currentEnv)-1]:
+        if envList.index(currentEnv) > 0 and check(old_state, currentEnv) and global_var.sigmaDictX.get((int(old_state[0]),actionValue[0]),99) > sigmaThreshX[envList.index(currentEnv)-1] and global_var.sigmaDictY.get((int(old_state[1]),actionValue[1]),99) > sigmaThreshY[envList.index(currentEnv)-1]:
             currentEnv = envList[envList.index(currentEnv)-1]
             print "*************** PREVIOUS TRANSITION ***************"        
             # New action client init
             action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
             #print "action client init"
             action_client.wait_for_server()
-    
+    	no_of_samples = 0
         while (sum(devQueueX) > sigma_sum_threshX[envList.index(currentEnv)] or sum(devQueueY) > sigma_sum_threshY[envList.index(currentEnv)]) or len(devQueueY) < 5:     
-    		
             actionValue = actionList[random.randint(0,3)]
+            no_of_samples += 1
             if actionValue == (0,1):
                 action_value = 0
             elif actionValue == (-1,0):
@@ -159,7 +159,7 @@ def agent_client():
                 #plt.scatter(old_state[0],old_state[1], marker='o', s=100, color='red')
                 #plt.pause(0.001)   
 
-        plt.show()
+        print  'Samples gathered in\t' + str(envList.index(currentEnv)) + '\t is \t' + str(no_of_samples)
         #FIND THE SIGMA VALUE and ADD
         if (envList.index(currentEnv) + 1) != len(envList):
             print 'MAKING TRANSITION'
@@ -209,9 +209,14 @@ def done(integer,result):
                 elif action_value == 3:
                     action_value_append = (1,0)
 
+                print '\n'
+                #print action_value_append
+                print next_state
+                print '\n'
+
                 velocity =  ((next_state[0] - old_state[0])/global_var.delta_t, (next_state[1] - old_state[1])/global_var.delta_t)
                 record.append( [old_state, action_value_append, velocity] )
-                print record
+                # print record
                 old_state = next_state
                 global_var.current_state_for_grid_world_reference = old_state
 
