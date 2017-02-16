@@ -42,11 +42,11 @@ currentEnv = envList[0]
 transition = update_gp_new.update_transition_class()
 updateObj = planner_new.gprmax()
 
-fig = plt.figure(2)
-plt.ion()
-for x in xrange(-GRID, GRID + 1, global_var.delta_t):
-    for y in xrange(-GRID, GRID + 1, global_var.delta_t):
-        plt.scatter(x,y, marker='o', s=100, color='red')
+#fig = plt.figure(2)
+#plt.ion()
+# for x in xrange(-GRID, GRID + 1, global_var.delta_t):
+#     for y in xrange(-GRID, GRID + 1, global_var.delta_t):
+#         plt.scatter(x,y, marker='o', s=100, color='red')
 
 def currentStates(currentEnvironmet):
     global states1
@@ -104,7 +104,7 @@ def agent_client():
         goal = gp_gazebo.msg.agentGoal(action=action_value)
         action_client.send_goal(goal,done_cb= done)
         #action_client.send_goal(goal)
-        print "GOAL SENT --> " + str(goal) 
+        #print "GOAL SENT --> " + str(goal) 
         action_client.wait_for_result()
 
     T = transition.upDate_transition(record,currentStates(currentEnv))
@@ -124,7 +124,7 @@ def agent_client():
             print "*************** PREVIOUS TRANSITION ***************"        
             # New action client init
             action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
-            print "action client init"
+            #print "action client init"
             action_client.wait_for_server()
     
         while (sum(devQueueX) > sigma_sum_threshX[envList.index(currentEnv)] or sum(devQueueY) > sigma_sum_threshY[envList.index(currentEnv)]) or len(devQueueY) < 5:     
@@ -144,10 +144,6 @@ def agent_client():
             action_client.wait_for_result()
             currSigmaX = global_var.sigmaDictX.get((int(next_state[0]),actionValue[0]),999)
             currSigmaY = global_var.sigmaDictY.get((int(next_state[1]),actionValue[1]),999)
-            print '$$$$$$$$$$$'
-            print currSigmaX
-            print currSigmaY
-            print '$$$$$$$$$$$'
             devQueueX.appendleft(currSigmaX)
             devQueueY.appendleft(currSigmaY)
 
@@ -158,10 +154,10 @@ def agent_client():
                 U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
                 policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)        
                 recordCounter = 0
-                plt.quiver(next_state[0],next_state[1],actionValue[0],actionValue[1])
+                #plt.quiver(next_state[0],next_state[1],actionValue[0],actionValue[1])
                 #plt.scatter(next_state[0],next_state[1], marker='o', s=500, color='blue')
-                plt.scatter(old_state[0],old_state[1], marker='o', s=100, color='red')
-                plt.pause(0.001)   
+                #plt.scatter(old_state[0],old_state[1], marker='o', s=100, color='red')
+                #plt.pause(0.001)   
 
         plt.show()
         #FIND THE SIGMA VALUE and ADD
@@ -171,14 +167,14 @@ def agent_client():
             devQueueY = deque([], 5)
             currentEnv = envList[envList.index(currentEnv) + 1]
             action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
-            print "action client init"
+            #print "action client init"
             action_client.wait_for_server()
 
             T = transition.upDate_transition(record,currentStates(currentEnv))
     
-        print "==========="
-        print currentEnv
-        print "==========="
+        # print "==========="
+        # print currentEnv
+        # print "==========="
 
     U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
     policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
@@ -200,10 +196,9 @@ def done(integer,result):
     action_value_append = ()
 
     if integer == 3:
-    	print action_value
         if result.terminal == False:
             if result.reward != 0:
-                next_state = (result.state[0],result.state[1])
+                next_state = (int(result.state[0]),int(result.state[1]))
                 #next_state = (max(min(result.state[0],GRID),-GRID) , max(min(result.state[1],GRID),-GRID))
                 if action_value == 0:
                     action_value_append = (0,1)
@@ -213,10 +208,12 @@ def done(integer,result):
                     action_value_append = (0,-1)
                 elif action_value == 3:
                     action_value_append = (1,0)
+
                 velocity =  ((next_state[0] - old_state[0])/global_var.delta_t, (next_state[1] - old_state[1])/global_var.delta_t)
-                record.append( [old_state, action_value_append, next_state] )
+                record.append( [old_state, action_value_append, velocity] )
+                print record
                 old_state = next_state
-                current_state_for_grid_world_reference = old_state
+                global_var.current_state_for_grid_world_reference = old_state
 
 
 if __name__ == '__main__':
