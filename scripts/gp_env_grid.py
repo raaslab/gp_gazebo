@@ -11,7 +11,7 @@ import math
 import std_msgs.msg
 import actionlib
 import gp_gazebo.msg
-from global_var import GRID, current_state_for_grid_world_reference
+from global_var import GRID
 import global_var
 
 MAX_ACTIONS = 6
@@ -51,16 +51,19 @@ class agentAction(object):
 		elif action_value == 3:
 		    action = (1,0)
 
+		#print action
 		mu = 0
 		sigma = 0.15
 		noise = sigma * np.random.randn() + mu
-		state = current_state_for_grid_world_reference
+		state = global_var.current_state_for_grid_world_reference
 		#noise = 0
 		a = int(round(state[0] + action[0] * global_var.delta_t + noise))
 		b = int(round(state[1] + action[1] * global_var.delta_t + noise)) 
 		#actualState = state + action + randn(mean=0,sigma=0.1)
 		currentState  = (max(min(a,GRID),-GRID), max(min(b,GRID),-GRID))
-
+		global_var.current_state_for_grid_world_reference = currentState
+		#print 'CS' + str(currentState)
+		# print currentState
 		if ((GOAL_STATE_X == currentState[0]) and (GOAL_STATE_Y == currentState[1])):
 			print "********************* YOU Reached the goal ******************"
 			#self._feedback.terminal = True
@@ -71,13 +74,10 @@ class agentAction(object):
 		#self._feedback.terminal = False
 			self._result.reward= -1
 			self._result.terminal = False
-			print "1 unit movement"
-
-		print "CURRENT STATE"
-		print currentState
-
-		self._result.state.insert(0,currentState[0])
-		self._result.state.insert(1,currentState[1])
+			#print "1 unit movement"
+		
+		self._result.state.insert(0, currentState[0])
+		self._result.state.insert(1, currentState[1])
 
 		self._as.set_succeeded(self._result)
 		self._result.state[:]=[]

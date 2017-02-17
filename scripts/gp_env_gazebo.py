@@ -109,7 +109,7 @@ class agentAction(object):
 		if action_value != -1:    
 			for i in range(0,10):
 				localPosPub.publish(pose)
-				time.sleep(0.3)
+				time.sleep(0.2)
 		
 			currPose = rospy.wait_for_message("/mavros/local_position/pose" ,PoseStamped) 
 			'''
@@ -121,7 +121,7 @@ class agentAction(object):
 
 			print "CURRENT POSITION" + str(currentX) + "," + str(currentY) + "," + str(currentZ) 
 			# IF UAV HITS THE OBSTACLES
-			'''
+			
 			if ((GOAL_STATE_X == currentX) and (GOAL_STATE_Y == currentY) and (2 == currentZ)):
 				print "********************* YOU Reached the goal ******************"
 				#self._feedback.terminal = True
@@ -132,10 +132,10 @@ class agentAction(object):
 				self._result.reward= -1
 				self._result.terminal = False
 				print "1 unit movement"
-			'''
-			self._result.state.insert(0,currentX)
-			self._result.state.insert(1,currentY)
-			self._result.state.insert(2,currentZ)
+			
+			self._result.state.insert(0, currentX)
+			self._result.state.insert(1, currentY)
+			#self._result.state.insert(2, currentZ)
 
 			self._as.set_succeeded(self._result)
 			self._result.state[:]=[]
