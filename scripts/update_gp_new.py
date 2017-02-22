@@ -32,10 +32,10 @@ class update_transition_class:
 
 		trainingX, targetX, trainingY, targetY = [], [], [], []
 		for elements in record:
-			trainingX.append( [elements[0][0] , elements[1][0]] )
+			trainingX.append( [elements[0][0] , elements[0][1], elements[1][0]] )
 			targetX.append( elements[2][0] )
 			
-			trainingY.append( [elements[0][1] , elements[1][1]] )
+			trainingY.append( [elements[0][0], elements[0][1] , elements[1][1]] )
 			targetY.append( elements[2][1] )  			
 
 		DX , tX = np.array( trainingX ), np.array( targetX )
@@ -52,8 +52,8 @@ class update_transition_class:
 
 		for i in states:
 			for k in actions:
-				muX, sigmaX = gpX.predict( np.array( [i[0], k[0]] ), return_std=True, return_cov=False)
-				muY, sigmaY = gpY.predict( np.array( [i[1], k[1]] ), return_std=True, return_cov=False)
+				muX, sigmaX = gpX.predict( np.array( [i[0], i[1], k[0]] ), return_std=True, return_cov=False)
+				muY, sigmaY = gpY.predict( np.array( [i[0], i[1], k[1]] ), return_std=True, return_cov=False)
 				
 				p[:] = []
 				tempX = {(i[0],k[0]):round(sigmaX[0],3)}
