@@ -64,10 +64,10 @@ def currentStates(currentEnvironmet):
     
     return states1
 
-def check(curr,currentEnvironment):
+def check(curr, currentEnvironment):
     global envList
     return curr in currentStates(envList[envList.index(currentEnvironment)-1])
-  
+
 
 def agent_client():
 
@@ -80,10 +80,10 @@ def agent_client():
     global updateObj
     global envList
     global recordCounter
-    sigma_sum_threshX = [0.2, 0.8]
-    sigmaThreshX = [0.04, 0.2]
-    sigma_sum_threshY = [0.2, 0.8]
-    sigmaThreshY = [0.04, 0.2]
+    sigma_sum_threshX = [0.25, 0.5]
+    sigmaThreshX = [0.05, 0.1]
+    sigma_sum_threshY = [.25, 0.5]
+    sigmaThreshY = [0.05, 0.1]
     actionList = [(0,1),(1,0),(0,-1),(-1,0)]
 
     devQueueX = deque([], 5)
@@ -107,65 +107,80 @@ def agent_client():
         #print "GOAL SENT --> " + str(goal) 
         action_client.wait_for_result()
 
-    T = transition.upDate_transition(record,currentStates(currentEnv))
+    T = transition.upDate_transition(record,currentStates(currentEnv)) 
     U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
     policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
-    old_state = (-GRID,-GRID)
-    
+    old_state = (-GRID, -GRID)
+    list_of_samples_gathered = []
     '''
     #GP-MFRL Algorithm
     '''
-    for i in range(0,20):
+    while True:
 
         actionValue = actionList[random.randint(0,3)]
         #actionValue = policy [oldState]
         if envList.index(currentEnv) > 0 and check(old_state, currentEnv) and global_var.sigmaDictX.get((int(old_state[0]),actionValue[0]),99) > sigmaThreshX[envList.index(currentEnv)-1] and global_var.sigmaDictY.get((int(old_state[1]),actionValue[1]),99) > sigmaThreshY[envList.index(currentEnv)-1]:
             currentEnv = envList[envList.index(currentEnv)-1]
             print "*************** PREVIOUS TRANSITION ***************"        
+            devQueueX = deque([], 5)
+            devQueueY = deque([], 5)
             # New action client init
             action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
             #print "action client init"
             action_client.wait_for_server()
+        
         no_of_samples = 0
-        while (sum(devQueueX) > sigma_sum_threshX[envList.index(currentEnv)] or sum(devQueueY) > sigma_sum_threshY[envList.index(currentEnv)]) or len(devQueueY) < 5:     
-            actionValue = actionList[random.randint(0,3)]
-            no_of_samples += 1
-            if actionValue == (0,1):
-                action_value = 0
-            elif actionValue == (-1,0):
-                 action_value = 1
-            elif actionValue == (0,-1):
-                 action_value = 2
-            elif actionValue == (1,0):
-                 action_value = 3
+        if (sum(devQueueX) < sigma_sum_threshX[envList.index(currentEnv)] and sum(devQueueY) < sigma_sum_threshY[envList.index(currentEnv)]) and len(devQueueY) > 4:     
+            currentEnv = envList[envList.index(currentEnv) + 1]
+            print '++++++++NEXT Transition+++++++'
+            devQueueX = deque([], 5)
+            devQueueY = deque([], 5)
 
-            goal = gp_gazebo.msg.agentGoal(action=action_value)
-            action_client.send_goal(goal,done_cb= done)
-            action_client.wait_for_result()
-            currSigmaX = global_var.sigmaDictX.get((int(next_state[0]),actionValue[0]),999)
-            currSigmaY = global_var.sigmaDictY.get((int(next_state[1]),actionValue[1]),999)
-            devQueueX.appendleft(currSigmaX)
-            devQueueY.appendleft(currSigmaY)
+        actionValue = actionList[random.randint(0,3)]
+        # no_of_samples += 1
+        if actionValue == (0,1):
+            action_value = 0
+        elif actionValue == (-1,0):
+            action_value = 1
+        elif actionValue == (0,-1):
+            action_value = 2
+        elif actionValue == (1,0):
+            action_value = 3
 
-            recordCounter = recordCounter + 1
+        goal = gp_gazebo.msg.agentGoal(action = action_value)
+        action_client.send_goal(goal, done_cb= done)
+        action_client.wait_for_result()
+        currSigmaX = global_var.sigmaDictX.get((int(next_state[0]),actionValue[0]),999)
+        currSigmaY = global_var.sigmaDictY.get((int(next_state[1]),actionValue[1]),999)
+        devQueueX.appendleft(currSigmaX)
+        devQueueY.appendleft(currSigmaY)
 
-            if recordCounter == 7:
-                T = transition.upDate_transition(record,currentStates(currentEnv))
-                U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
-                policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)        
-                recordCounter = 0
+        recordCounter = recordCounter + 1
+
+        if recordCounter  == 5:
+            T = transition.upDate_transition(record,currentStates(currentEnv))
+                # U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
+                # policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)        
+            recordCounter = 0
                 #plt.quiver(next_state[0],next_state[1],actionValue[0],actionValue[1])
                 #plt.scatter(next_state[0],next_state[1], marker='o', s=500, color='blue')
                 #plt.scatter(old_state[0],old_state[1], marker='o', s=100, color='red')
-                #plt.pause(0.001)   
+                #plt.pause(0.001)
+        # list_of_samples_gathered.append(no_of_samples)        
+        # print  'Samples gathered in\t' + str(envList.index(currentEnv)) + '\t is \t' + str(no_of_samples)
+        # FIND THE SIGMA VALUE and ADD
 
-        print  'Samples gathered in\t' + str(envList.index(currentEnv)) + '\t is \t' + str(no_of_samples)
-        #FIND THE SIGMA VALUE and ADD
-        if (envList.index(currentEnv) + 1) != len(envList):
-            print 'MAKING TRANSITION'
-            devQueueX = deque([], 5)
-            devQueueY = deque([], 5)
-            currentEnv = envList[envList.index(currentEnv) + 1]
+        if next_state == (GRID, GRID):
+            tmp = U
+            U = updateObj.value_iteration (T, currentStates(currentEnv), currentEnv)
+            difference, maximum = 0, -999
+            for key in U:
+                difference = max(difference, abs(U[key] - tmp[key]))
+                if U[key] > maximum : maximum = U[key]
+                
+            if difference < 0.1 * abs(maximum) and envList.index(currentEnv) == 1: break
+
+            
             action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
             #print "action client init"
             action_client.wait_for_server()
@@ -178,6 +193,9 @@ def agent_client():
 
     U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
     policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
+    
+    print 'samples in grid world' + str(sum(list_of_samples_gathered[0: len(list_of_samples_gathered):2]))
+    print 'samples in gazebo' + str(sum(list_of_samples_gathered[1: len(list_of_samples_gathered):2]))
         #plot()
             #T = transition.upDate_transition(record,currentStates(currentEnv))
             #U = updateObj.value_iteration ( T ,currentStates(currentEnv))
@@ -209,10 +227,10 @@ def done(integer,result):
                 elif action_value == 3:
                     action_value_append = (1,0)
 
-                print '\n'
+                # print '\n'
                 #print action_value_append
-                print next_state
-                print '\n'
+                # print next_state
+                # print '\n'
 
                 velocity =  ((next_state[0] - old_state[0])/global_var.delta_t, (next_state[1] - old_state[1])/global_var.delta_t)
                 record.append( [old_state, action_value_append, velocity] )

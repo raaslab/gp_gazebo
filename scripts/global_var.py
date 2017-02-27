@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-GRID = 6
+GRID = 2
 numOfActions = 4
 initialTrainingEpisodes = 10
 global delta_t

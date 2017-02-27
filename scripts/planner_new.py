@@ -50,7 +50,7 @@ class gprmax:
                 return U1
 
 
-    def best_policy(self, U, T,states,env):
+    def best_policy(self, U, T, states, env):
         pi = {}
         for s in states:
             li=[]
@@ -78,14 +78,26 @@ class gprmax:
         
 
                  # Still has to define
-    def reward_dynmaics(self , state,env):
-        if state == (GRID,GRID) : return 50
-        #elif state == (2, -1) : return -30  
-        #elif state == (2, 1) : return -30 
-        #elif state == (-1, 2) : return -30 
-        #elif state == (0, -1) : return -30 
-        #elif state == (1, 0) : return -30 
-        else : return -3
+    def reward_dynmaics(self , state, env):
+    	# wall1 = [(0, i) for i in range(-10, -2)]
+    	# wall2 = [(0, i) for i in range(3, 11)]
+    	# wall3 = [(i, 0) for i in range(-10, -2)]
+    	# wall4 = [(i, 0) for i in range(3, 11)]
+
+    	# wall1 = [(i, 0) for i in range(-7, -3)]
+    	# wall2 = [(i, 4) for i in range(-5, 8)]
+    	# wall3 = [(-7, i) for i in range(0, 7)]
+    	# wall4 = [(i, 6) for i in range(-10, -6)]
+
+    	if env == 'grid' :
+        	if state == (GRID, GRID) : return 30
+        	#elif state in wall1 or state in wall2 : return -20 
+        	else : return -3
+
+        else:
+        	#if state in wall1 or state in wall2 or state in wall3 or state in wall4 : return -20
+        	if state == (GRID, GRID) : return 30 
+        	else : return -3
 
     """Given an MDP and a utility function U, determine the best policy,
     as a mapping from state to action. """

@@ -73,11 +73,11 @@ class update_transition_class:
 					p.append(round(prob,3))
 
 				p_norm = [round(float(probabilities)/(sum(p) + 0.01), 3)  for probabilities in p]
-				list_of_prob = zip(states,p_norm)
+				list_of_prob = zip(states, p_norm)
 				temporary = {(i , k): list_of_prob}
 				
 				T = dict(T.items() + temporary.items() )
-
+				#print T
 		return T
 	'''
 	Integrate Gaussian over the rectangle.
