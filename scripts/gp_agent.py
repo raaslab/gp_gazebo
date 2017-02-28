@@ -80,10 +80,10 @@ def agent_client():
     global updateObj
     global envList
     global recordCounter
-    sigma_sum_threshX = [0.25, 0.5]
-    sigmaThreshX = [0.05, 0.1]
-    sigma_sum_threshY = [.25, 0.5]
-    sigmaThreshY = [0.05, 0.1]
+    sigma_sum_threshX = [0.5, 1.0]
+    sigmaThreshX = [0.1, 0.2]
+    sigma_sum_threshY = [.5, 1.0]
+    sigmaThreshY = [0.1, 0.2]
     actionList = [(0,1),(1,0),(0,-1),(-1,0)]
 
     devQueueX = deque([], 5)
@@ -115,11 +115,15 @@ def agent_client():
     '''
     #GP-MFRL Algorithm
     '''
+    tracking = 1
     while True:
-
+    	#print tracking
+    	tracking += 1
+    	print '\n' +  str(old_state)
+    	print devQueueX
         actionValue = actionList[random.randint(0,3)]
-        #actionValue = policy [oldState]
-        if envList.index(currentEnv) > 0 and check(old_state, currentEnv) and global_var.sigmaDictX.get((int(old_state[0]),actionValue[0]),99) > sigmaThreshX[envList.index(currentEnv)-1] and global_var.sigmaDictY.get((int(old_state[1]),actionValue[1]),99) > sigmaThreshY[envList.index(currentEnv)-1]:
+        #actionValue = policy [old_state]
+        if envList.index(currentEnv) > 0 and check(old_state, currentEnv) and global_var.sigmaDictX.get((int(old_state[0]),actionValue[0]), 99) > sigmaThreshX[envList.index(currentEnv)-1] and global_var.sigmaDictY.get((int(old_state[1]),actionValue[1]),99) > sigmaThreshY[envList.index(currentEnv)-1]:
             currentEnv = envList[envList.index(currentEnv)-1]
             print "*************** PREVIOUS TRANSITION ***************"        
             devQueueX = deque([], 5)
@@ -130,13 +134,13 @@ def agent_client():
             action_client.wait_for_server()
         
         no_of_samples = 0
-        if (sum(devQueueX) < sigma_sum_threshX[envList.index(currentEnv)] and sum(devQueueY) < sigma_sum_threshY[envList.index(currentEnv)]) and len(devQueueY) > 4:     
+        if (sum(devQueueX) < sigma_sum_threshX[envList.index(currentEnv)] and sum(devQueueY) < sigma_sum_threshY[envList.index(currentEnv)]) and len(devQueueY) > 4 and envList.index(currentEnv) < 1:      
             currentEnv = envList[envList.index(currentEnv) + 1]
             print '++++++++NEXT Transition+++++++'
             devQueueX = deque([], 5)
             devQueueY = deque([], 5)
 
-        actionValue = actionList[random.randint(0,3)]
+   
         # no_of_samples += 1
         if actionValue == (0,1):
             action_value = 0
@@ -186,7 +190,7 @@ def agent_client():
             action_client.wait_for_server()
 
             T = transition.upDate_transition(record,currentStates(currentEnv))
-    
+            policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
         # print "==========="
         # print currentEnv
         # print "==========="
@@ -194,17 +198,28 @@ def agent_client():
     U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
     policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
     
-    print 'samples in grid world' + str(sum(list_of_samples_gathered[0: len(list_of_samples_gathered):2]))
-    print 'samples in gazebo' + str(sum(list_of_samples_gathered[1: len(list_of_samples_gathered):2]))
+    # print 'samples in grid world' + str(sum(list_of_samples_gathered[0: len(list_of_samples_gathered):2]))
+    # print 'samples in gazebo' + str(sum(list_of_samples_gathered[1: len(list_of_samples_gathered):2]))
         #plot()
             #T = transition.upDate_transition(record,currentStates(currentEnv))
             #U = updateObj.value_iteration ( T ,currentStates(currentEnv))
 
 
+    for x in range(-GRID, GRID + 1):
+    	for y in range(-GRID, GRID + 1):
+    		a, b = policy[x, y]
+    		plt.quiver(x, y, a, b)		
     '''
     #END OF ALGORITHM
     '''
-    
+    plt.xlim(-GRID - 1, GRID + 1)
+    plt.ylim(-GRID - 1, GRID + 1)
+    plt.show()
+    print policy
+
+			
+
+
 
 def done(integer,result):
     global action_value
