@@ -67,21 +67,13 @@ class update_transition_class:
 				
 				stateValue = np.array([ i[0] +  muX[0] * global_var.delta_t, i[1] + muY[0] * global_var.delta_t])
 				
-				# For neighbor states
-				neighborXmin = max(min(i[0]-2,GRID),-GRID)
-				neighborXmax = max(min(i[0]+3,GRID),-GRID)
-				neighborYmin = max(min(i[1]-2,GRID),-GRID)
-				neighborYmax = max(min(i[1]+3,GRID),-GRID)
-
-				neighborStates = [ (itr1, itr2) for itr1 in range(neighborXmin,neighborXmax) for itr2 in range(neighborYmin,neighborYmax)]
-				
-				for j in neighborStates:
+				for j in states:
 					#prob = self.probability_of_states(j[0],j[1],mu[0],sigma*np.eye(2))
 					prob = self.probability_of_states(j[0], j[1], stateValue, [[sigmaX[0]**2, 0],[0, sigmaY[0]**2]])
 					p.append(round(prob,3))
 
 				p_norm = [round(float(probabilities)/(sum(p) + 0.01), 3)  for probabilities in p]
-				list_of_prob = zip(neighborStates, p_norm)
+				list_of_prob = zip(states, p_norm)
 				temporary = {(i , k): list_of_prob}
 				
 				T = dict(T.items() + temporary.items() )

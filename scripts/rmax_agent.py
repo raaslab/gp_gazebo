@@ -6,7 +6,6 @@ import time
 import random
 import math
 import std_msgs.msg
-import update_gp_new
 import matplotlib.pyplot as plt
 import actionlib
 import matplotlib.pyplot as plt
@@ -29,7 +28,7 @@ next_state = (0,0)
 record = []
 gamma = 0.9
 epsilon = 0.05
-envList = ['grid', 'gazebo']
+envList = ['gazebo', 'gazebo']
 states1 = [ (i , j) for i in xrange(-GRID,GRID+1,1) for j in xrange(-GRID,GRID+1,1)]
 states2 = [ (i , j) for i in xrange(-GRID,GRID+1,2) for j in xrange(-GRID,GRID+1,2)]
 states3 = [ (i , j) for i in xrange(-GRID,GRID+1,4) for j in xrange(-GRID,GRID+1,4)]
@@ -40,7 +39,7 @@ global_var.sigmaDictY = {}
 global_var.delta_t = 1
  
 currentEnv = envList[0]
-transition = update_gp_new.update_transition_class()
+
 updateObj = planner_new.gprmax()
 
 #fig = plt.figure(2)
@@ -78,7 +77,7 @@ def agent_client():
     global next_state
     global record
     global currentEnv
-    global transition
+    
     global updateObj
     global envList
     global recordCounter
@@ -137,10 +136,13 @@ def agent_client():
 
 
 
-
+    samples_in_second_simulator = 0
+    reward_in_second_simulator = 0
+    f = open("reward_one_sim.txt", "w")
 
     while True:
 
+        
         # Choose action
         # actionValue = actionList[random.randint(0,3)]
         if random.random() < epsilon:
@@ -157,8 +159,12 @@ def agent_client():
             actionValue = actionList[i]
 
 
-    	
-    	
+    	if envList.index(currentEnv) == 1:
+            samples_in_second_simulator += 1
+            reward_in_second_simulator += reward_dynmaics(old_state, actionValue, currentEnv)
+            print samples_in_second_simulator
+            print reward_in_second_simulator
+            if samples_in_second_simulator % 25 == 0 : f.write( str(samples_in_second_simulator) + '\t' + str(reward_in_second_simulator)  )    	       
     	# print '\n' +  str(old_state)
     	# print devQueueX
         # actionValue = actionList[random.randint(0,3)]
@@ -200,15 +206,14 @@ def agent_client():
         
         N[(old_state, actionValue)] = N.get((old_state, actionValue)) + 1
         N_next[(s, a, next_state)] = N_next.get((old_state, actionValue, next_state)) + 1
-
+        tmp = Q
         if N.get((old_state, actionValue)) == 5:
-            tmp = Q
             for times in range(0, 20):
                 for s in currentStates(currentEnv):
                     for a in actionList:
-                        if N.get((s, a)) > 4 : 
-                            Q[(s, a)] = reward_dynmaics(s, a, currentEnv) + gamma * sum([N_next.get((s, a, sn))/(N.get((s, a)) + 0.01)  * max( [Q.get((sn, a)) for a in actionList] )  for sn in currentStates(currentEnv)]) 
-
+                        if N.get((s, a)) > 4 :
+                            Q[(s, a)] = sum([ N_next.get((s, a, sn))/(N.get((s, a)) + 0.01) * ( reward_dynmaics(s, a, currentEnv) + gamma * max( [Q.get((sn, a)) for a in actionList] )) for sn in currentStates(currentEnv)])     
+                               
             difference, maximum = 0, -999
             if next_state == (GRID, GRID):
                 for key in Q:
@@ -223,7 +228,7 @@ def agent_client():
         # print "==========="
         # print currentEnv
         # print "==========="
-
+        f.close()
     # U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
     # policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
     
@@ -234,21 +239,21 @@ def agent_client():
             #U = updateObj.value_iteration ( T ,currentStates(currentEnv))
 
 
-    for x in range(-GRID, GRID + 1):
-    	for y in range(-GRID, GRID + 1):
-    		a, b = policy[x, y]
-    		plt.quiver(x, y, a, b)		
-    '''
-    #END OF ALGORITHM
-    '''
-    plt.xlim(-GRID - 1, GRID + 1)
-    plt.ylim(-GRID - 1, GRID + 1)
-    plt.show()
-    print policy
+    # for x in range(-GRID, GRID + 1):
+    # 	for y in range(-GRID, GRID + 1):
+    # 		a, b = policy[x, y]
+    # 		plt.quiver(x, y, a, b)		
+    # '''
+    # #END OF ALGORITHM
+    # '''
+    # plt.xlim(-GRID - 1, GRID + 1)
+    # plt.ylim(-GRID - 1, GRID + 1)
+    # plt.show()
+    # print policy
 
 			
 
-
+    print Q
 
 def done(integer,result):
     global action_value

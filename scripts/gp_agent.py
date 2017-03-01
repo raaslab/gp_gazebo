@@ -23,12 +23,12 @@ import global_var
 from collections import deque
 #currentState = 0
 action_value = 0
-old_state = (-GRID, -GRID)
+old_state = (-GRID + 2, -GRID + 2)
 next_state = (0,0)
 #plannerObj = None
 record = []
 
-envList = ['grid','gazebo']
+envList = ['gazebo','gazebo']
 states1 = [ (i , j) for i in xrange(-GRID,GRID+1,1) for j in xrange(-GRID,GRID+1,1)]
 states2 = [ (i , j) for i in xrange(-GRID,GRID+1,2) for j in xrange(-GRID,GRID+1,2)]
 states3 = [ (i , j) for i in xrange(-GRID,GRID+1,4) for j in xrange(-GRID,GRID+1,4)]
@@ -116,6 +116,8 @@ def agent_client():
     #GP-MFRL Algorithm
     '''
     tracking = 1
+    #f = open("reward_gp_mfrl.txt", "w")
+    samples_in_second_simulator = 0
     while True:
     	#print tracking
     	tracking += 1
@@ -123,6 +125,7 @@ def agent_client():
     	print devQueueX
         actionValue = actionList[random.randint(0,3)]
         #actionValue = policy [old_state]
+        
         if envList.index(currentEnv) > 0 and check(old_state, currentEnv) and global_var.sigmaDictX.get((int(old_state[0]),actionValue[0]), 99) > sigmaThreshX[envList.index(currentEnv)-1] and global_var.sigmaDictY.get((int(old_state[1]),actionValue[1]),99) > sigmaThreshY[envList.index(currentEnv)-1]:
             currentEnv = envList[envList.index(currentEnv)-1]
             print "*************** PREVIOUS TRANSITION ***************"        
@@ -134,13 +137,27 @@ def agent_client():
             action_client.wait_for_server()
         
         no_of_samples = 0
-        if (sum(devQueueX) < sigma_sum_threshX[envList.index(currentEnv)] and sum(devQueueY) < sigma_sum_threshY[envList.index(currentEnv)]) and len(devQueueY) > 4 and envList.index(currentEnv) < 1:      
+        if (sum(devQueueX) < sigma_sum_threshX[envList.index(currentEnv)] and sum(devQueueY) < sigma_sum_threshY[envList.index(currentEnv)]) and len(devQueueY) > 4 and envList.index(currentEnv) < len(envList) - 1:      
             currentEnv = envList[envList.index(currentEnv) + 1]
             print '++++++++NEXT Transition+++++++'
+            action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)
+            #print "action client init"
+            action_client.wait_for_server()
             devQueueX = deque([], 5)
             devQueueY = deque([], 5)
 
-   
+        #reward_in_second_simulator = 0    
+        #if envList.index(currentEnv) == 1:
+            # samples_in_second_simulator += 1
+            # print samples_in_second_simulator
+            # print reward_in_second_simulator
+            # if samples_in_second_simulator % 25 == 0 : 
+            #     U = updateObj.value_iteration (T, currentStates(currentEnv), currentEnv)
+            #     policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
+            #     while old_state != Goal_state
+            #     reward_in_second_simulator += reward_dynmaics(old_state, actionValue, currentEnv) 
+            #     f.write( str(samples_in_second_simulator) + '\t' + str(reward_in_second_simulator)  )
+
         # no_of_samples += 1
         if actionValue == (0,1):
             action_value = 0
@@ -182,7 +199,7 @@ def agent_client():
                 difference = max(difference, abs(U[key] - tmp[key]))
                 if U[key] > maximum : maximum = U[key]
                 
-            if difference < 0.1 * abs(maximum) and envList.index(currentEnv) == 1: break
+            if difference < 0.05 * abs(maximum) and envList.index(currentEnv) == 1: break
 
             
             action_client = actionlib.SimpleActionClient(currentEnv,gp_gazebo.msg.agentAction)

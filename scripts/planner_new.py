@@ -15,7 +15,7 @@ class gprmax:
         self.actions = actions
         #self.states= [(x,y) for x in range(-GRID,GRID+1) for y in range(-GRID,GRID+1)]
     
-    def value_iteration( self, T ,states,env):
+    def value_iteration( self, T ,states, env):
             
         U1 = dict([(s, 0) for s in states ])
         li = []
@@ -84,18 +84,18 @@ class gprmax:
     	# wall3 = [(i, 0) for i in range(-10, -2)]
     	# wall4 = [(i, 0) for i in range(3, 11)]
 
-    	# wall1 = [(i, 0) for i in range(-7, -3)]
-    	# wall2 = [(i, 4) for i in range(-5, 8)]
-    	# wall3 = [(-7, i) for i in range(0, 7)]
-    	# wall4 = [(i, 6) for i in range(-10, -6)]
+    	wall1 = [(i, 0) for i in range(-7, -3)]
+    	wall2 = [(i, 4) for i in range(-5, 8)]
+    	wall3 = [(-7, i) for i in range(0, 7)]
+    	wall4 = [(i, 6) for i in range(-10, -6)]
 
     	if env == 'grid' :
-        	if state == (GRID, GRID) : return 30
-        	#elif state in wall1 or state in wall2 : return -20 
+        	if state == (GRID, GRID) : return 50
+        	elif state in wall1 or state in wall2 : return -20 
         	else : return -3
 
         else:
-        	#if state in wall1 or state in wall2 or state in wall3 or state in wall4 : return -20
+        	if state in wall1 or state in wall2 or state in wall3 or state in wall4 : return -20
         	if state == (GRID, GRID) : return 30 
         	else : return -3
 
