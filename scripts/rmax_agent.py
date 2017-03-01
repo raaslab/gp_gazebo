@@ -224,8 +224,8 @@ def agent_client():
         # print currentEnv
         # print "==========="
 
-    U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
-    policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
+    # U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
+    # policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
     
     # print 'samples in grid world' + str(sum(list_of_samples_gathered[0: len(list_of_samples_gathered):2]))
     # print 'samples in gazebo' + str(sum(list_of_samples_gathered[1: len(list_of_samples_gathered):2]))
