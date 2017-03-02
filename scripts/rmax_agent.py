@@ -28,7 +28,7 @@ next_state = (0,0)
 record = []
 gamma = 0.9
 epsilon = 0.05
-envList = ['gazebo', 'gazebo']
+envList = ['gazebo']
 states1 = [ (i , j) for i in xrange(-GRID,GRID+1,1) for j in xrange(-GRID,GRID+1,1)]
 states2 = [ (i , j) for i in xrange(-GRID,GRID+1,2) for j in xrange(-GRID,GRID+1,2)]
 states3 = [ (i , j) for i in xrange(-GRID,GRID+1,4) for j in xrange(-GRID,GRID+1,4)]
@@ -138,7 +138,7 @@ def agent_client():
 
     samples_in_second_simulator = 0
     reward_in_second_simulator = 0
-    f = open("reward_one_sim.txt", "w")
+    f = open("reward_one_sim_rmax.txt", "w")
 
     while True:
 
@@ -159,7 +159,7 @@ def agent_client():
             actionValue = actionList[i]
 
 
-    	if envList.index(currentEnv) == 1:
+    	#if envList.index(currentEnv) == 1:
             # samples_in_second_simulator += 1
             # reward_in_second_simulator += reward_dynmaics(old_state, actionValue, currentEnv)
             # print samples_in_second_simulator
@@ -169,19 +169,18 @@ def agent_client():
     	# print devQueueX
         # actionValue = actionList[random.randint(0,3)]
         # actionValue = policy [old_state]
-     	if envList.index(currentEnv) == 1:
+     	if envList.index(currentEnv) < 1:
             samples_in_second_simulator += 1
             print samples_in_second_simulator
             print reward_in_second_simulator
-            if samples_in_second_simulator % 25 == 0 : 
+            if samples_in_second_simulator % 5 == 0 : 
                 # U = updateObj.value_iteration (T, currentStates(currentEnv), currentEnv)
                 # policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
                 # while old_state != Goal_state
                 # reward_in_second_simulator += reward_dynmaics(old_state, actionValue, currentEnv) 
-                # f.write( str(samples_in_second_simulator) + '\t' + str(reward_in_second_simulator)  )
-                print Q[(-8,-8)]
-   
-        
+                f.write( str(max(Q[(-8,-8),aa] for aa in actionList)) )
+                f.write('\n')
+                print "WRITTEN TO FILE"
         
 
         if envList.index(currentEnv) > 0 and check(old_state, currentEnv) and N[(old_state, actionValue)] < 5 :
@@ -239,7 +238,7 @@ def agent_client():
         # print "==========="
         # print currentEnv
         # print "==========="
-        f.close()
+    f.close()
     # U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
     # policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
     
