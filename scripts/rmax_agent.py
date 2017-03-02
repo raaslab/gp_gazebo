@@ -160,16 +160,27 @@ def agent_client():
 
 
     	if envList.index(currentEnv) == 1:
-            samples_in_second_simulator += 1
-            reward_in_second_simulator += reward_dynmaics(old_state, actionValue, currentEnv)
-            print samples_in_second_simulator
-            print reward_in_second_simulator
-            if samples_in_second_simulator % 25 == 0 : f.write( str(samples_in_second_simulator) + '\t' + str(reward_in_second_simulator)  )    	       
+            # samples_in_second_simulator += 1
+            # reward_in_second_simulator += reward_dynmaics(old_state, actionValue, currentEnv)
+            # print samples_in_second_simulator
+            # print reward_in_second_simulator
+            # if samples_in_second_simulator % 25 == 0 : f.write( str(samples_in_second_simulator) + '\t' + str(reward_in_second_simulator)  )    	       
     	# print '\n' +  str(old_state)
     	# print devQueueX
         # actionValue = actionList[random.randint(0,3)]
         # actionValue = policy [old_state]
-        
+     	if envList.index(currentEnv) == 1:
+            samples_in_second_simulator += 1
+            print samples_in_second_simulator
+            print reward_in_second_simulator
+            if samples_in_second_simulator % 25 == 0 : 
+                # U = updateObj.value_iteration (T, currentStates(currentEnv), currentEnv)
+                # policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
+                # while old_state != Goal_state
+                # reward_in_second_simulator += reward_dynmaics(old_state, actionValue, currentEnv) 
+                # f.write( str(samples_in_second_simulator) + '\t' + str(reward_in_second_simulator)  )
+                print Q[(-8,-8)]
+   
         
         
 

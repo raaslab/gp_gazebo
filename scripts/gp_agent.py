@@ -28,7 +28,7 @@ next_state = (0,0)
 #plannerObj = None
 record = []
 
-envList = ['gazebo','gazebo']
+envList = ['gazebo']
 states1 = [ (i , j) for i in xrange(-GRID,GRID+1,1) for j in xrange(-GRID,GRID+1,1)]
 states2 = [ (i , j) for i in xrange(-GRID,GRID+1,2) for j in xrange(-GRID,GRID+1,2)]
 states3 = [ (i , j) for i in xrange(-GRID,GRID+1,4) for j in xrange(-GRID,GRID+1,4)]
@@ -116,7 +116,7 @@ def agent_client():
     #GP-MFRL Algorithm
     '''
     tracking = 1
-    #f = open("reward_gp_mfrl.txt", "w")
+    f = open("reward_gp_single_mfrl.txt", "w")
     samples_in_second_simulator = 0
     while True:
     	#print tracking
@@ -146,17 +146,19 @@ def agent_client():
             devQueueX = deque([], 5)
             devQueueY = deque([], 5)
 
-        #reward_in_second_simulator = 0    
-        #if envList.index(currentEnv) == 1:
-            # samples_in_second_simulator += 1
-            # print samples_in_second_simulator
-            # print reward_in_second_simulator
-            # if samples_in_second_simulator % 25 == 0 : 
-            #     U = updateObj.value_iteration (T, currentStates(currentEnv), currentEnv)
-            #     policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
-            #     while old_state != Goal_state
-            #     reward_in_second_simulator += reward_dynmaics(old_state, actionValue, currentEnv) 
-            #     f.write( str(samples_in_second_simulator) + '\t' + str(reward_in_second_simulator)  )
+        reward_in_second_simulator = 0    
+        if envList.index(currentEnv) < 2:
+            samples_in_second_simulator += 1
+            print samples_in_second_simulator
+            print reward_in_second_simulator
+            if samples_in_second_simulator % 25 == 0 : 
+                U = updateObj.value_iteration (T, currentStates(currentEnv), currentEnv)
+                policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
+                # while old_state != Goal_state
+                # reward_in_second_simulator += reward_dynmaics(old_state, actionValue, currentEnv) 
+                f.write( str(U[(-8,-8)])  )
+                f.write('\n')
+                print "WRITTEN TO A FILE"
 
         # no_of_samples += 1
         if actionValue == (0,1):
@@ -212,8 +214,8 @@ def agent_client():
         # print currentEnv
         # print "==========="
 
-    U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
-    policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
+    # U = updateObj.value_iteration ( T ,currentStates(currentEnv),currentEnv)
+    # policy = updateObj.best_policy( U, T ,currentStates(currentEnv),currentEnv)
     
     # print 'samples in grid world' + str(sum(list_of_samples_gathered[0: len(list_of_samples_gathered):2]))
     # print 'samples in gazebo' + str(sum(list_of_samples_gathered[1: len(list_of_samples_gathered):2]))
@@ -233,6 +235,7 @@ def agent_client():
     plt.ylim(-GRID - 1, GRID + 1)
     plt.show()
     print policy
+    f.close()
 
 			
 
